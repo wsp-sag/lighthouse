@@ -8,5 +8,4 @@ tables:
   - persons
   - tours
   - trips
-  - joint_tour_participants
   - vehicles

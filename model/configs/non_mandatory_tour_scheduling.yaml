@@ -9,7 +9,6 @@ preprocessor:
   DF: non_mandatory_tours
   TABLES:
     - land_use
-    - joint_tour_participants
 
 SIMULATE_CHOOSER_COLUMNS:
   - ptype

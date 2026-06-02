@@ -188,11 +188,6 @@ models:
   - cdap_simulate
   - mandatory_tour_frequency
   - mandatory_tour_scheduling
-  - joint_tour_frequency
-  - joint_tour_composition
-  - joint_tour_participation
-  - joint_tour_destination
-  - joint_tour_scheduling
   - non_mandatory_tour_frequency
   - non_mandatory_tour_destination
   - non_mandatory_tour_scheduling
@@ -238,7 +233,6 @@ output_tables:
       decode_columns:
         origin: land_use.zone_id
         destination: land_use.zone_id
-    - joint_tour_participants
 # area_types less than this are considered urban
 urban_threshold: 4
 cbd_threshold: 2

@@ -44,8 +44,6 @@ util_start_shift_for_subsequent_sub_tour_of_same_work_tour,Start shift for subse
 util_duration_shift_for_subsequent_sub_tour_of_same_work_tour,Duration shift for subsequent sub-tour of the same work tour,(tour_type_num == 2) * duration,coef_duration_shift_for_subsequent_sub_tour_of_same_work_tour
 util_start_shift_for_number_of_mandatory_tours,Start shift for number of mandatory tours made by the person,start * num_mand,coef_start_shift_for_number_of_mandatory_tours
 util_duration_shift_for_number_of_mandatory_tours,Duration shift for number of mandatory tours made by the person,duration * num_mand,coef_duration_shift_for_number_of_mandatory_tours
-util_start_shift_for_number_of_joint_tours,Start shift for number of joint tours in which the person participated,start * num_joint_tours,coef_start_shift_for_number_of_joint_tours
-util_duration_shift_for_number_of_joint_tours,Duration shift for number of joint tours in which the person participated,duration * num_joint_tours,coef_duration_shift_for_number_of_joint_tours
 util_start_shift_for_number_of_individual_nonmandatory_tours,Start shift for number of individual nonm tours (including escort) made by the person,start * num_non_mand,coef_start_shift_for_number_of_individual_nonmandatory_tours
 util_duration_shift_for_number_of_individual_nonmandatory_tours,Duration shift for number of individual nonm tours (including escort) made by the person,duration * num_non_mand,coef_duration_shift_for_number_of_individual_nonmandatory_tours
 #,,,

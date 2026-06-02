@@ -18,4 +18,4 @@ Description,Target,Expression
 ,num_hh_joint_othdiscr_tours,"reindex_i(_JOINT_TOURS[_JOINT_TOURS.tour_type=='othdiscr'].groupby('household_id').size(), persons.household_id)"
 # non_mandatory tour frequency extension,,
 ,has_mandatory_tour,(persons.num_mand > 0) * 1
-,has_joint_tour,(persons.num_joint_tours > 0) * 1
+,has_joint_tour,0
