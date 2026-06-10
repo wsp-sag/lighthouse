@@ -1,0 +1,93 @@
+---
+# tour_mode_choice.yaml
+SPEC: tour_mode_choice.csv
+COEFFICIENTS: tour_mode_choice_coefficients.csv
+COEFFICIENT_TEMPLATE: tour_mode_choice_coefficients_template.csv
+LOGIT_TYPE: NL
+NESTS:
+  name: root
+  coefficient: coef_nest_root
+  alternatives:
+    - name: AUTO
+      coefficient: coef_nest_AUTO
+      alternatives:[DRIVEALONE, SHARED2, SHARED3]
+    - name: NONMOTORIZED
+      coefficient: coef_nest_NONMOTORIZED
+      alternatives: [WALK, BIKE]
+    - name: TRANSIT
+      coefficient: coef_nest_TRANSIT
+      alternatives: [WALK_TRANSIT, DRIVE_TRANSIT] 
+    - name: RIDEHAIL
+
+CONSTANTS:
+  costPerMile: 18.29
+  costShareSr2: 1.75
+  costShareSr3: 2.50
+  waitThresh: 10.00
+  walkThresh: 1.50
+  shortWalk: 0.333
+  longWalk: 0.667
+  walkSpeed: 3.00
+  bikeThresh: 6.00
+  bikeSpeed: 12.00
+  maxCbdAreaTypeThresh: 2
+  indivTour: 1.00000
+  upperEV: 6
+  upperAM: 9
+  upperMD: 15
+  upperPM: 19
+
+
+  min_waitTime: 0
+  max_waitTime: 50
+  ivt_cost_multiplier: 0.6
+  ivt_lrt_multiplier: 0.9
+  ivt_ferry_multiplier: 0.8
+  ivt_exp_multiplier: 1
+  ivt_hvy_multiplier: 0.8
+  ivt_com_multiplier: 0.7
+  walktimeshort_multiplier: 2
+  walktimelong_multiplier: 10
+  biketimeshort_multiplier: 4
+  biketimelong_multiplier: 20
+  short_i_wait_multiplier: 2
+  long_i_wait_multiplier: 1
+  wacc_multiplier: 2
+  wegr_multiplier: 2
+  waux_multiplier: 2
+  dtim_multiplier: 2
+  xwait_multiplier: 2
+  dacc_ratio: 0
+  xfers_wlk_multiplier: 10
+  xfers_drv_multiplier: 20
+  drvtrn_distpen_0_multiplier: 270
+  drvtrn_distpen_max: 15
+  density_index_multiplier: -0.2
+  ridehail_wait_time_multiplier: 1.5
+
+preprocessor:
+  SPEC: tour_mode_choice_annotate_choosers_preprocessor
+  DF: choosers
+  TABLES: [land_use, tours]
+nontour_preprocessor:
+  SPEC: tour_mode_choice_annotate_choosers_preprocessor
+  DF: choosers
+  TABLES:
+    - land_use
+
+# to reduce memory needs filter chooser table to these fields
+LOGSUM_CHOOSER_COLUMNS:
+  - tour_type
+  - hhsize
+  - density_index
+  - age
+  - age_16_p
+  - age_16_to_19
+  - auto_ownership
+  - number_of_participants
+  - tour_category
+  - num_workers
+  - value_of_time
+  - free_parking_at_work
+
+MODE_CHOICE_LOGSUM_COLUMN_NAME: mode_choice_logsum
