@@ -10,13 +10,20 @@ NESTS:
   alternatives:
     - name: AUTO
       coefficient: coef_nest_AUTO
-      alternatives:[DRIVEALONE, SHARED2, SHARED3]
+      alternatives:
+       - DRIVEALONE
+       - SHARED2
+       - SHARED3
     - name: NONMOTORIZED
       coefficient: coef_nest_NONMOTORIZED
-      alternatives: [WALK, BIKE]
+      alternatives:
+       - WALK
+       - BIKE
     - name: TRANSIT
       coefficient: coef_nest_TRANSIT
-      alternatives: [WALK_TRANSIT, DRIVE_TRANSIT] 
+      alternatives:
+       - WALK_TRANSIT
+       - DRIVE_TRANSIT
     - name: RIDEHAIL
 
 CONSTANTS:
