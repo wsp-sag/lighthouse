@@ -4,7 +4,7 @@ coef_nest_root,1,T
 coef_nest_AUTO,0.72,T
 coef_nest_NONMOTORIZED,0.72,T
 coef_nest_TRANSIT,0.72,T
-coef_nest_RIDEHAIL,0.36,T
+coef_nest_RIDEHAIL,0.72,T
 coef_ivt_eatout_escort_othdiscr_othmaint_shopping_social,-0.0175,F
 coef_ivt_school_univ,-0.0224,F
 coef_ivt_work,-0.0134,F
