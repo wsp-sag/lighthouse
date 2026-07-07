@@ -1,3 +1,0 @@
-Description,Target,Expression
-,num_maint_shop_escort,df.num_maint_tours+df.num_shop_tours+df.num_escort_tours
-,work_tour_is_SOV,"df.tour_mode.isin(['DRIVEALONEFREE','DRIVEALONEPAY'])"
