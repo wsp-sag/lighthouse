@@ -24,10 +24,10 @@ NESTS:
       alternatives:
        - WALK_TRANSIT
        - DRIVE_TRANSIT
-    - name: RIDEHAIL
+    - name: RIDEHAIL_NEST
       coefficient: coef_nest_RIDEHAIL
       alternatives:
-        - RIDEHAIL
+       - RIDEHAIL
 
 CONSTANTS:
   costPerMile: 18.29
