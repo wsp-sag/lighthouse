@@ -46,8 +46,22 @@ CONSTANTS:
   upperAM: 9
   upperMD: 15
   upperPM: 19
-
-
+  TNC_single_baseFare: 2.20
+  TNC_single_costPerMile: 1.33
+  TNC_single_costPerMinute: 0.24
+  TNC_single_costMinimum: 7.20
+  TNC_single_waitTime_mean: 
+    1: 3.0
+    2: 6.3
+    3: 8.4
+    4: 8.5
+    5: 10.3
+  TNC_single_waitTime_sd: 
+    1: 0
+    2: 0
+    3: 0
+    4: 0
+    5: 0
   min_waitTime: 0
   max_waitTime: 50
   ivt_cost_multiplier: 0.6
