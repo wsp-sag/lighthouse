@@ -3,7 +3,7 @@ Description,Target,Expression
 #,, auto peak
 #,,
 #,, assume peak occurs in AM for outbound and PM for inbound
-peak round trip distance,_auPkTime,"skim_od[('SOVTOLL_TIME', 'AM')] + skim_do[('SOVTOLL_TIME', 'PM')]"
+peak round trip distance,_auPkTime,"skim_od[('da_time', 'AM')] + skim_do[('da_time', 'PM')]"
 decay function,_decay, exp(_auPkTime * dispersion_parameter_automobile)
 auto peak retail,auPkRetail,df.RETEMPN * _decay
 auto peak total,auPkTotal,df.TOTEMP * _decay
@@ -11,7 +11,7 @@ auto peak total,auPkTotal,df.TOTEMP * _decay
 #,, auto off-peak
 #,,
 #,, assume midday occurs entirely in the midday period
-off-peak round trip distance,_auOpTime,"skim_od[('SOVTOLL_TIME', 'MD')] + skim_do[('SOVTOLL_TIME', 'MD')]"
+off-peak round trip distance,_auOpTime,"skim_od[('da_time', 'MD')] + skim_do[('da_time', 'MD')]"
 decay function,_decay, exp(_auOpTime * dispersion_parameter_automobile)
 auto off-peak retail,auOpRetail,df.RETEMPN * _decay
 auto off-peak total,auOpTotal,df.TOTEMP * _decay
@@ -19,12 +19,12 @@ auto off-peak total,auOpTotal,df.TOTEMP * _decay
 #,, transit peak
 #,,
 #,, assume peak outbound transit occurs in AM
-o-d peak transit ivt,_inVehicleTime,"skim_od[('WLK_TRN_WLK_IVT', 'AM')]"
-o-d peak transit ovt,_outOfVehicleTime,"skim_od[('WLK_TRN_WLK_IWAIT', 'AM')] + skim_od[('WLK_TRN_WLK_XWAIT', 'AM')] + skim_od[('WLK_TRN_WLK_WACC', 'AM')] + skim_od[('WLK_TRN_WLK_WAUX', 'AM')] + skim_od[('WLK_TRN_WLK_WEGR', 'AM')]"
+o-d peak transit ivt,_inVehicleTime,"skim_od[('tw_ivtt', 'AM')]"
+o-d peak transit ovt,_outOfVehicleTime,"skim_od[('tw_iwait', 'AM')] + skim_od[('tw_xwait', 'AM')] + skim_od[('tw_walk', 'AM')]"
 o-d peak transit time,_trPkTime_od,(_inVehicleTime + out_of_vehicle_time_weight * _outOfVehicleTime) / TRANSIT_SCALE_FACTOR
 #,, assume peak inbound transit occurs in PM
-d-o peak transit ivt,_inVehicleTime,"skim_do[('WLK_TRN_WLK_IVT', 'PM')]"
-d-o peak transit ovt,_outOfVehicleTime,"skim_do[('WLK_TRN_WLK_IWAIT', 'PM')] + skim_do[('WLK_TRN_WLK_XWAIT', 'PM')] + skim_do[('WLK_TRN_WLK_WACC', 'PM')] + skim_do[('WLK_TRN_WLK_WAUX', 'PM')] + skim_do[('WLK_TRN_WLK_WEGR', 'PM')]"
+d-o peak transit ivt,_inVehicleTime,"skim_do[('tw_ivtt', 'PM')]"
+d-o peak transit ovt,_outOfVehicleTime,"skim_do[('tw_iwait', 'PM')] + skim_do[('tw_xwait', 'PM')] + skim_do[('tw_walk', 'PM')]"
 d-o peak transit time,_trPkTime_do,(_inVehicleTime + out_of_vehicle_time_weight * _outOfVehicleTime) / TRANSIT_SCALE_FACTOR
 peak transit time,_trPkTime,(_trPkTime_od + _trPkTime_do).clip(0)
 round trip path is available,_rt_available,(_trPkTime_od > 0) & (_trPkTime_do > 0)
@@ -35,12 +35,12 @@ transit peak total,trPkTotal,df.TOTEMP * _decay
 #,, transit off-peak
 #,,
 #,, assume off-peak outbound transit occurs in the MD time period
-o-d off-peak transit ivt,_inVehicleTime,"skim_od[('WLK_TRN_WLK_IVT', 'MD')]"
-o-d off-peak transit ovt,_outOfVehicleTime,"skim_od[('WLK_TRN_WLK_IWAIT', 'MD')] + skim_od[('WLK_TRN_WLK_XWAIT', 'MD')] + skim_od[('WLK_TRN_WLK_WACC', 'MD')] + skim_od[('WLK_TRN_WLK_WAUX', 'MD')] + skim_od[('WLK_TRN_WLK_WEGR', 'MD')]"
+o-d off-peak transit ivt,_inVehicleTime,"skim_od[('tw_ivtt', 'MD')]"
+o-d off-peak transit ovt,_outOfVehicleTime,"skim_od[('tw_iwait', 'MD')] + skim_od[('tw_xwait', 'MD')] + skim_od[('tw_walk', 'MD')]"
 o-d off-peak transit time,_trOpTime_od,(_inVehicleTime + out_of_vehicle_time_weight * _outOfVehicleTime) / TRANSIT_SCALE_FACTOR
 #,, assume off-peak inbound transit occurs in the MD time period
-d-o off-peak transit ivt,_inVehicleTime,"skim_do[('WLK_TRN_WLK_IVT', 'MD')]"
-d-o off-peak transit ovt,_outOfVehicleTime,"skim_do[('WLK_TRN_WLK_IWAIT', 'MD')] + skim_do[('WLK_TRN_WLK_XWAIT', 'MD')] + skim_do[('WLK_TRN_WLK_WACC', 'MD')] + skim_do[('WLK_TRN_WLK_WAUX', 'MD')] + skim_do[('WLK_TRN_WLK_WEGR', 'MD')]"
+d-o off-peak transit ivt,_inVehicleTime,"skim_do[('tw_ivtt', 'MD')]"
+d-o off-peak transit ovt,_outOfVehicleTime,"skim_do[('tw_iwait', 'MD')] + skim_do[('tw_xwait', 'MD')] + skim_do[('tw_walk', 'MD')]"
 d-o off-peak transit time,_trOpTime_do,(_inVehicleTime + out_of_vehicle_time_weight * _outOfVehicleTime) / TRANSIT_SCALE_FACTOR
 peak transit time,_trOpTime,(_trOpTime_od + _trOpTime_do).clip(0)
 #,,FIXME - _rt_available calculation appears to be wrong in mtctm1 accessibility.job
@@ -52,7 +52,7 @@ transit off-peak total,trOpTotal,df.TOTEMP * _decay
 #,,
 #,, non motorized
 #,,
-non-motorized round trip distance,_nmDist,skim_od['DISTWALK'] + skim_do['DISTWALK']
+non-motorized round trip distance,_nmDist,skim_od['dist_nm'] + skim_do['dist_nm']
 round trip path is available,_rt_available,_nmDist <= maximum_walk_distance
 decay function,_decay,_rt_available * exp(_nmDist * dispersion_parameter_walk)
 retail accessibility,nmRetail,df.RETEMPN * _decay
