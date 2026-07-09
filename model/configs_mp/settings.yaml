@@ -23,7 +23,7 @@ strict: false
 use_shadow_pricing: false
 households_sample_size: 0
 chunk_size: 0
-num_processes: 2
+num_processes: 10
 
 # - -------------------------
 
