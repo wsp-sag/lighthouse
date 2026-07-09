@@ -60,36 +60,17 @@ dest terminal time not counted at home,_dest_terminal_time,"np.where(inbound & l
 ,origin_zone_sharedTNC_wait_time_sd,"origin_density.map({k: v for k, v in TNC_shared_waitTime_sd.items()})"
 ,origSharedTNCWaitTime,"rng.lognormal_for_df(df, mu=origin_zone_sharedTNC_wait_time_mean, sigma=origin_zone_sharedTNC_wait_time_sd, broadcast=True, scale=True).clip(min_waitTime, max_waitTime)"
 #,,
-,sov_available,odt_skims['SOV_TIME']>0
-,hov2_available,odt_skims['HOV2_TIME']>0
-,hov3_available,odt_skims['HOV3_TIME']>0
-,sovtoll_available,odt_skims['SOVTOLL_VTOLL']>0
-,hov2toll_available,odt_skims['HOV2TOLL_VTOLL']>0
-,hov3toll_available,odt_skims['HOV3TOLL_VTOLL']>0
-,walk_local_available,walk_transit_available & (odt_skims['WLK_LOC_WLK_TOTIVT']/TRANSIT_SCALE_FACTOR>0)
-,walk_lrf_available,walk_transit_available & (i_tour_mode >= 10) & (odt_skims['WLK_LRF_WLK_KEYIVT']/TRANSIT_SCALE_FACTOR>0)
-,walk_express_available,walk_transit_available & (i_tour_mode >= 11) & (odt_skims['WLK_EXP_WLK_KEYIVT']/TRANSIT_SCALE_FACTOR>0)
-,walk_heavyrail_available,walk_transit_available & (i_tour_mode >= 12) & (odt_skims['WLK_HVY_WLK_KEYIVT']/TRANSIT_SCALE_FACTOR>0)
-,walk_commuter_available,walk_transit_available & (i_tour_mode >= 13) & (odt_skims['WLK_COM_WLK_KEYIVT']/TRANSIT_SCALE_FACTOR>0)
-,drive_local_available_outbound,drive_transit_available & df.outbound & (odt_skims['DRV_LOC_WLK_TOTIVT']/TRANSIT_SCALE_FACTOR>0)
-,drive_local_available_inbound,drive_transit_available & ~df.outbound & (odt_skims['WLK_LOC_DRV_TOTIVT']/TRANSIT_SCALE_FACTOR>0)
-,drive_lrf_available_outbound,drive_transit_available & df.outbound & (i_tour_mode >= 15) & (odt_skims['DRV_LRF_WLK_KEYIVT']/TRANSIT_SCALE_FACTOR>0)
-,drive_lrf_available_inbound,drive_transit_available & ~df.outbound & (i_tour_mode >= 15) & (odt_skims['WLK_LRF_DRV_KEYIVT']/TRANSIT_SCALE_FACTOR>0)
-,drive_express_available_outbound,drive_transit_available & df.outbound & (i_tour_mode >= 16) & (odt_skims['DRV_EXP_WLK_KEYIVT']/TRANSIT_SCALE_FACTOR>0)
-,drive_express_available_inbound,drive_transit_available & ~df.outbound & (i_tour_mode >= 16) & (odt_skims['WLK_EXP_DRV_KEYIVT']/TRANSIT_SCALE_FACTOR>0)
-,drive_heavyrail_available_outbound,drive_transit_available & df.outbound & (i_tour_mode >= 17) & (odt_skims['DRV_HVY_WLK_KEYIVT']/TRANSIT_SCALE_FACTOR>0)
-,drive_heavyrail_available_inbound,drive_transit_available & ~df.outbound & (i_tour_mode >= 17) & (odt_skims['WLK_HVY_DRV_KEYIVT']/TRANSIT_SCALE_FACTOR>0)
-,drive_commuter_available_outbound,drive_transit_available & df.outbound & (i_tour_mode >= 18) & (odt_skims['DRV_COM_WLK_KEYIVT']/TRANSIT_SCALE_FACTOR>0)
-,drive_commuter_available_inbound,drive_transit_available & ~df.outbound & (i_tour_mode >= 18) & (odt_skims['WLK_COM_DRV_KEYIVT']/TRANSIT_SCALE_FACTOR>0)
-,walk_ferry_available,walk_lrf_available & (odt_skims['WLK_LRF_WLK_FERRYIVT']/TRANSIT_SCALE_FACTOR>0)
-,_drive_ferry_available_outbound,drive_lrf_available_outbound & (odt_skims['DRV_LRF_WLK_FERRYIVT']/TRANSIT_SCALE_FACTOR>0)
-,_drive_ferry_available_inbound,drive_lrf_available_inbound & (odt_skims['WLK_LRF_DRV_FERRYIVT']/TRANSIT_SCALE_FACTOR>0)
-,drive_ferry_available,"np.where(df.outbound, _drive_ferry_available_outbound, _drive_ferry_available_inbound)"
-#,od_dist_walk,od_skims['DISTWALK']
-#,do_dist_walk,od_skims.reverse('DISTWALK')
-#,max_dist_walk,od_skims.max('DISTWALK')
-#,dist_bike,od_skims['DISTBIKE']
-#,dist_only,od_skims['DIST']
-,distance,od_skims['DIST']
-,distance_walk_od,od_skims['DISTWALK']
-,distance_bike_od,od_skims['DISTBIKE']
+,sov_available,odt_skims['da_time']>0
+,hov2_available,odt_skims['sr_time']>0
+,hov3_available,odt_skims['sr_time']>0
+,walk_transit_available,walk_transit_available & (odt_skims['tw_ivtt']/TRANSIT_SCALE_FACTOR>0)
+,drive_transit_available_outbound,drive_transit_available & df.outbound & (odt_skims['ta_ivtt']/TRANSIT_SCALE_FACTOR>0)
+,drive_transit_available_inbound,drive_transit_available & ~df.outbound & (odt_skims['ta_ivtt']/TRANSIT_SCALE_FACTOR>0)
+#,od_dist_walk,od_skims['dist_nm']
+#,do_dist_walk,od_skims.reverse('dist_nm')
+#,max_dist_walk,od_skims.max('dist_nm')
+#,dist_bike,od_skims['dist_nm']
+#,dist_only,od_skims['dist']
+,distance,od_skims['dist']
+,distance_walk_od,od_skims['dist_nm']
+,distance_bike_od,od_skims['dist_nm']

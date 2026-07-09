@@ -10,35 +10,20 @@ NESTS:
     - name: AUTO
       coefficient: coef_nest_AUTO
       alternatives:
-        - name: DRIVEALONE
-          coefficient: coef_nest_AUTO_DRIVEALONE
-          alternatives: [DRIVEALONEFREE, DRIVEALONEPAY]
-        - name: SHAREDRIDE2
-          coefficient: coef_nest_AUTO_SHAREDRIDE2
-          alternatives: [SHARED2FREE, SHARED2PAY]
-        - name: SHAREDRIDE3
-          coefficient: coef_nest_AUTO_SHAREDRIDE3
-          alternatives: [SHARED3FREE, SHARED3PAY]
+       - DRIVEALONE
+       - SHARED2
+       - SHARED3
     - name: NONMOTORIZED
       coefficient: coef_nest_NONMOTORIZED
-      alternatives: [WALK, BIKE]
+      alternatives:
+       - WALK
+       - BIKE
     - name: TRANSIT
       coefficient: coef_nest_TRANSIT
       alternatives:
-        - name: WALKACCESS
-          coefficient: coef_nest_TRANSIT_WALKACCESS
-          alternatives: [WALK_LOC, WALK_LRF, WALK_EXP, WALK_HVY, WALK_COM]
-        - name: DRIVEACCESS
-          coefficient: coef_nest_TRANSIT_DRIVEACCESS
-          alternatives:
-            - DRIVE_LOC
-            - DRIVE_LRF
-            - DRIVE_EXP
-            - DRIVE_HVY
-            - DRIVE_COM
-    - name: RIDEHAIL
-      coefficient: coef_nest_RIDEHAIL
-      alternatives: [TAXI, TNC_SINGLE, TNC_SHARED]
+       - WALK_TRANSIT
+       - DRIVE_TRANSIT
+    - RIDEHAIL
 CONSTANTS:
   orig_col_name: origin
   dest_col_name: destination
