@@ -35,7 +35,7 @@ want_dest_choice_sample_tables: false
 
 # - tracing
 # trace_hh_id:
-trace_od: [2, 2]
+# trace_od: [2, 2]
 # to resume after last successful checkpoint, specify resume_after: _
 # resume_after: trip_purpose_and_destination
 models:

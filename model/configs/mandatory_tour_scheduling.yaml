@@ -34,3 +34,5 @@ DESTINATION_FOR_TOUR_PURPOSE:
   work: workplace_zone_id
   school: school_zone_id
   univ: school_zone_id
+
+explicit_chunk: 0.1

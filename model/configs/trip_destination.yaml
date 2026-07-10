@@ -36,3 +36,5 @@ CLEANUP: false
 
 # this setting is used by testing code to force failed trip_destination
 # fail_some_trips_for_testing: false
+
+explicit_chunk: 0.1

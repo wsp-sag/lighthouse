@@ -143,7 +143,7 @@ chunk_method: hybrid_uss
 # production
 # disabled
 # assume enough RAM to not chunk
-chunk_training_mode: disabled
+chunk_training_mode: explicit
 
 # whether to preserve or delete subprocess chunk and mem logs when they are consolidated at end of multiprocess run
 keep_chunk_logs: true
@@ -204,10 +204,14 @@ models:
 output_tables:
   h5_store: false
   action: include
+  file_type: parquet
   prefix: final_
+  sort: True
   tables:
     - checkpoints
-    - accessibility
+    - tablename: accessibility
+      decode_columns:
+        zone_id: land_use.zone_id
     - tablename: land_use
       decode_columns:
         zone_id: land_use.zone_id

@@ -21,3 +21,5 @@ SIMULATE_CHOOSER_COLUMNS:
 
 compute_settings:
   use_numexpr: true
+
+explicit_chunk: 0.1
