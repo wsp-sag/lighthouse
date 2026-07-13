@@ -47,6 +47,8 @@ def make_plot(csv_path: Path, output_path: Path, figsize: tuple[float, float]) -
     df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
     df["memory_used_gb"] = pd.to_numeric(df["memory_used_gb"], errors="coerce")
     df["cpu_percent"] = pd.to_numeric(df["cpu_percent"], errors="coerce")
+    if "step_index" in df.columns:
+        df["step_index"] = pd.to_numeric(df["step_index"], errors="coerce")
     step_name = df["step_name"].astype("string").str.strip()
     if "phase" in df.columns:
         phase = df["phase"].astype("string").str.strip()
@@ -87,9 +89,24 @@ def make_plot(csv_path: Path, output_path: Path, figsize: tuple[float, float]) -
     step_names = df["step_name"].unique().tolist()
     palette = _distinct_palette(len(step_names))
     step_colors = dict(zip(step_names, palette, strict=False))
-    legend_step_names = [step for step in step_names if step != "DONE"]
-    if "DONE" in step_names:
-        legend_step_names.append("DONE")
+    if "step_index" in df.columns:
+        first_seen_order = {step: idx for idx, step in enumerate(step_names)}
+        step_index_map = (
+            df.dropna(subset=["step_index"])
+            .groupby("step_name", as_index=True)["step_index"]
+            .min()
+            .to_dict()
+        )
+        legend_step_names = sorted(
+            step_names,
+            key=lambda step: (
+                step not in step_index_map,
+                step_index_map.get(step, float("inf")),
+                first_seen_order[step],
+            ),
+        )
+    else:
+        legend_step_names = step_names.copy()
     step_handles: dict[str, plt.Line2D] = {}
 
     for step in step_names:
