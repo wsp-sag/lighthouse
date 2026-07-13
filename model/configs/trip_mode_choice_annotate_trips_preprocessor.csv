@@ -70,7 +70,7 @@ dest terminal time not counted at home,_dest_terminal_time,"np.where(inbound & l
 #,do_dist_walk,od_skims.reverse('dist_nm')
 #,max_dist_walk,od_skims.max('dist_nm')
 #,dist_bike,od_skims['dist_nm']
-#,dist_only,od_skims['dist']
-,distance,od_skims['dist']
+#,dist_only,od_skims['DIST']
+,distance,od_skims['DIST']
 ,distance_walk_od,od_skims['dist_nm']
 ,distance_bike_od,od_skims['dist_nm']

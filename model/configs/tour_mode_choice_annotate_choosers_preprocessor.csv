@@ -51,7 +51,7 @@ local,_DF_IS_TOUR,'tour_type' in df.columns
 ,_hourly_offpeak_parking_cost,"np.where(_free_parking_available, 0, _dest_hourly_offpeak_parking_cost)"
 ,daily_parking_cost,"np.where(is_mandatory, _hourly_peak_parking_cost * df.duration, _hourly_offpeak_parking_cost * df.duration)"
 #,,
-,distance,od_skims['dist']
+,distance,od_skims['DIST']
 ,distance_walk_od,od_skims['dist_nm']
 ,distance_bike_od,od_skims['dist_nm']
 #,,

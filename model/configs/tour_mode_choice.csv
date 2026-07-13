@@ -74,7 +74,7 @@ util_DRIVE_TRANSIT_Destination_zone_densityIndex,DRIVE_TRANSIT - Destination zon
 util_DRIVE_TRANSIT_Topology,DRIVE_TRANSIT - Topology,@coef_topology_trn_multiplier * df.dest_topology,,,,,,,coef_ivt,
 util_DRIVE_TRANSIT_Person_is_less_than_10_years_old,DRIVE_TRANSIT - Person is less than 10 years old,@(df.age < 10),,,,,,,coef_age010_trn_multiplier,
 util_Drive_to_Transit_dest_CBD,Drive to Transit dest CBD,@df.destination_in_cbd,,,,,,,drive_transit_CBD_ASC,
-util_Drive_to_Transit_distance_penalty,Drive to Transit - distance penalty,@drvtrn_distpen_0_multiplier * (1-od_skims['dist']/drvtrn_distpen_max).clip(lower=0),,,,,,,coef_ivt,
+util_Drive_to_Transit_distance_penalty,Drive to Transit - distance penalty,@drvtrn_distpen_0_multiplier * (1-od_skims['DIST']/drvtrn_distpen_max).clip(lower=0),,,,,,,coef_ivt,
 #,Ridehail (TNC & Taxi),,,,,,,,,
 util_RIDEHAIL_In_vehicle_time,RIDEHAIL - In-vehicle time,@(odt_skims['sr_time'] + dot_skims['sr_time']),,,,,,,,coef_ivt
 util_RIDEHAIL_Wait_time,RIDEHAIL - Wait time,@ridehail_wait_time_multiplier * df.totalWaitRideHail,,,,,,,,coef_ivt
