@@ -10,35 +10,20 @@ NESTS:
     - name: AUTO
       coefficient: coef_nest_AUTO
       alternatives:
-        - name: DRIVEALONE
-          coefficient: coef_nest_AUTO_DRIVEALONE
-          alternatives: [DRIVEALONEFREE, DRIVEALONEPAY]
-        - name: SHAREDRIDE2
-          coefficient: coef_nest_AUTO_SHAREDRIDE2
-          alternatives: [SHARED2FREE, SHARED2PAY]
-        - name: SHAREDRIDE3
-          coefficient: coef_nest_AUTO_SHAREDRIDE3
-          alternatives: [SHARED3FREE, SHARED3PAY]
+       - DRIVEALONE
+       - SHARED2
+       - SHARED3
     - name: NONMOTORIZED
       coefficient: coef_nest_NONMOTORIZED
-      alternatives: [WALK, BIKE]
+      alternatives:
+       - WALK
+       - BIKE
     - name: TRANSIT
       coefficient: coef_nest_TRANSIT
       alternatives:
-        - name: WALKACCESS
-          coefficient: coef_nest_TRANSIT_WALKACCESS
-          alternatives: [WALK_LOC, WALK_LRF, WALK_EXP, WALK_HVY, WALK_COM]
-        - name: DRIVEACCESS
-          coefficient: coef_nest_TRANSIT_DRIVEACCESS
-          alternatives:
-            - DRIVE_LOC
-            - DRIVE_LRF
-            - DRIVE_EXP
-            - DRIVE_HVY
-            - DRIVE_COM
-    - name: RIDEHAIL
-      coefficient: coef_nest_RIDEHAIL
-      alternatives: [TAXI, TNC_SINGLE, TNC_SHARED]
+       - WALK_TRANSIT
+       - DRIVE_TRANSIT
+    - RIDEHAIL
 CONSTANTS:
   orig_col_name: origin
   dest_col_name: destination
@@ -53,36 +38,23 @@ CONSTANTS:
   bikeThresh: 6.00
   bikeSpeed: 12.00
   I_MODE_MAP:
-    DRIVEALONEFREE: 1
-    DRIVEALONEPAY: 2
-    SHARED2FREE: 3
-    SHARED2PAY: 4
-    SHARED3FREE: 5
-    SHARED3PAY: 6
-    WALK: 7
-    BIKE: 8
-    WALK_LOC: 9
-    WALK_LRF: 10
-    WALK_EXP: 11
-    WALK_HVY: 12
-    WALK_COM: 13
-    DRIVE_LOC: 14
-    DRIVE_LRF: 15
-    DRIVE_EXP: 16
-    DRIVE_HVY: 17
-    DRIVE_COM: 18
-    TAXI: 19
-    TNC_SINGLE: 20
-    TNC_SHARED: 21
-  I_SOV_MODES: [1, 2]
-  I_SR2_MODES: [3, 4]
-  I_SR3P_MODES: [5, 6]
-  I_AUTO_MODES: [1, 2, 3, 4, 5, 6]
-  I_WALK_MODE: 7
-  I_BIKE_MODE: 8
-  I_WALK_TRANSIT_MODES: [9, 10, 11, 12, 13]
-  I_DRIVE_TRANSIT_MODES: [14, 15, 16, 17, 18]
-  I_RIDE_HAIL_MODES: [19, 20, 21]
+    DRIVEALONE: 1
+    SHARED2: 2
+    SHARED3: 3
+    WALK: 4
+    BIKE: 5
+    WALK_TRANSIT: 6
+    DRIVE_TRANSIT: 7
+    RIDEHAIL: 8
+  I_SOV_MODES: [1]
+  I_SR2_MODES: [2]
+  I_SR3P_MODES: [3]
+  I_AUTO_MODES: [1, 2, 3]
+  I_WALK_MODE: 4
+  I_BIKE_MODE: 5
+  I_WALK_TRANSIT_MODES: [6]
+  I_DRIVE_TRANSIT_MODES: [7]
+  I_RIDE_HAIL_MODES: [8]
   # RIDEHAIL Settings
   Taxi_baseFare: 2.20
   Taxi_costPerMile: 2.30
@@ -144,8 +116,8 @@ CONSTANTS:
   xfers_wlk_multiplier: 5
   xfers_drv_multiplier: 15
   dacc_ratio_multiplier: 0
-  density_index_multiplier: -5
-  origin_density_index_multiplier: -15
+  density_index_multiplier: -0.2
+  origin_density_index_multiplier: -0.2
   origin_density_index_max: -15
   ivt_com_multiplier: 0.80
   ivt_exp_multiplier: -0.0175
@@ -174,4 +146,6 @@ TOURS_MERGED_CHOOSER_COLUMNS:
   - value_of_time
   - tour_type
   - free_parking_at_work
+  - person_id
+  - household_id
 MODE_CHOICE_LOGSUM_COLUMN_NAME: mode_choice_logsum

@@ -22,10 +22,6 @@ input_table_list:
     filename: households.csv
     index_col: household_id
     rename_columns:
-      HHID: household_id  # household_id is the required index column
-      PERSONS: hhsize
-      workers: num_workers
-      VEHICL: auto_ownership
       TAZ: home_zone_id
     recode_columns:
       home_zone_id: land_use.zone_id
@@ -42,8 +38,6 @@ input_table_list:
   - tablename: persons
     filename: persons.csv
     index_col: person_id
-    rename_columns:
-      PERID: person_id  # person_id is the required index column
     keep_columns:
       - household_id
       - age
@@ -59,7 +53,7 @@ input_table_list:
     filename: land_use.csv
     index_col: zone_id
     rename_columns:
-      TAZ: zone_id  # person_id is the required index column
+      TAZ: zone_id
       COUNTY: county_id
     recode_columns:
       zone_id: zero-based
@@ -96,7 +90,7 @@ recode_pipeline_columns: true
 # input_store: ../output/input_data.h5
 
 # number of households to simulate
-households_sample_size: 100000
+households_sample_size: 100
 # simulate all households
 # households_sample_size: 0
 
@@ -149,7 +143,7 @@ chunk_method: hybrid_uss
 # production
 # disabled
 # assume enough RAM to not chunk
-chunk_training_mode: disabled
+chunk_training_mode: explicit
 
 # whether to preserve or delete subprocess chunk and mem logs when they are consolidated at end of multiprocess run
 keep_chunk_logs: true
@@ -206,14 +200,18 @@ models:
   - track_skim_usage
   - write_trip_matrices
   - write_tables
-  - summarize
+  # - summarize # needed only for SimWrapper Viz
 output_tables:
   h5_store: false
   action: include
+  file_type: parquet
   prefix: final_
+  sort: True
   tables:
     - checkpoints
-    - accessibility
+    - tablename: accessibility
+      decode_columns:
+        zone_id: land_use.zone_id
     - tablename: land_use
       decode_columns:
         zone_id: land_use.zone_id

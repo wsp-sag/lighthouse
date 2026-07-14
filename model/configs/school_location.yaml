@@ -51,3 +51,5 @@ MODELED_SIZE_TABLE: school_modeled_size
 
 # not loaded if commented out
 SAVED_SHADOW_PRICE_TABLE_NAME: school_shadow_prices.csv
+
+explicit_chunk: 0.1
