@@ -15,7 +15,7 @@ Usage examples:
     python sys_monitor.py
     python sys_monitor.py --interval 1.0
     python sys_monitor.py --csv sys_usage.csv
-    python sys_monitor.py --log path/to/activitysim.log
+    python sys_monitor.py --log full/path/to/activitysim.log
 """
 
 import sys
@@ -35,10 +35,6 @@ except ImportError:
         file=sys.stderr,
     )
     sys.exit(1)
-
-
-# set working directory to current debug session
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 # --- Ordered step list and phase mapping -------------------------------------
 
@@ -339,6 +335,7 @@ def monitor(
     csv_file = None
     tracker = StepTracker()
     parent_process = None
+    log_path_warned_missing = False
     
     # If parent PID provided, get parent process object
     if parent_pid is not None:
@@ -391,6 +388,12 @@ def monitor(
 
             # Update tracker from log (if provided)
             if log_path:
+                if not os.path.exists(log_path) and not log_path_warned_missing:
+                    print(
+                        f"Warning: Log file not found at '{log_path}'. "
+                        "Phase/step tracking will stay at the initial step until a valid log path is provided."
+                    )
+                    log_path_warned_missing = True
                 text = _read_log_tail(log_path, max_read_bytes=tail_bytes)
                 tracker.update_from_tail(text)
 
