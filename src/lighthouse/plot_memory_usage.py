@@ -1,3 +1,7 @@
+"""
+Usage examples:
+    python plot_memory_usage.py path/to/memory/usage/csv
+"""
 from __future__ import annotations
 
 import argparse

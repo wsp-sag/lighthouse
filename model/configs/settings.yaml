@@ -246,3 +246,14 @@ household_median_value_of_time:
   2: 8.81
   3: 10.44
   4: 12.86
+
+
+###########
+# Sharrow
+# Uncomment the sharrow setting to enable sharrow.
+# Sharrow can be set to one of these values:
+# true: attempt to use sharrow compiler, if fails, fall back to pandas
+# require: always use sharrow compiler, if fails, raise error. use this if max performance is desired.
+# test: run both sharrow compiler and pandas, compare results, raise error if they differ. use this to validate sharrow compiler, not recommended for production runs.
+
+# sharrow: require
