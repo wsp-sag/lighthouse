@@ -26,15 +26,19 @@ NESTS:
     - RIDEHAIL
 CONSTANTS:
   orig_col_name: origin
+  # TODO: verify whether dest_col_name is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   dest_col_name: destination
   costPerMile: 18.29
   costShareSr2: 1.75
   costShareSr3: 2.50
   waitThresh: 10.00
+  # TODO: verify whether walkThresh is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   walkThresh: 1.00
   shortWalk: 0.333
+  # TODO: verify whether longWalk is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   longWalk: 0.667
   walkSpeed: 3.00
+  # TODO: verify whether bikeThresh is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   bikeThresh: 6.00
   bikeSpeed: 12.00
   I_MODE_MAP:
@@ -71,9 +75,13 @@ CONSTANTS:
     3: 0
     4: 0
     5: 0
+  # TODO: verify whether TNC_single_baseFare is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   TNC_single_baseFare: 2.20
+  # TODO: verify whether TNC_single_costPerMile is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   TNC_single_costPerMile: 1.33
+  # TODO: verify whether TNC_single_costPerMinute is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   TNC_single_costPerMinute: 0.24
+  # TODO: verify whether TNC_single_costMinimum is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   TNC_single_costMinimum: 7.20
   TNC_single_waitTime_mean:
     1: 3.0
@@ -87,10 +95,15 @@ CONSTANTS:
     3: 0
     4: 0
     5: 0
+  # TODO: verify whether TNC_shared_baseFare is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   TNC_shared_baseFare: 2.20
+  # TODO: verify whether TNC_shared_costPerMile is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   TNC_shared_costPerMile: 0.53
+  # TODO: verify whether TNC_shared_costPerMinute is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   TNC_shared_costPerMinute: 0.10
+  # TODO: verify whether TNC_shared_costMinimum is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   TNC_shared_costMinimum: 3.00
+  # TODO: verify whether TNC_shared_IVTFactor is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   TNC_shared_IVTFactor: 1.5
   TNC_shared_waitTime_mean:
     1: 5.0
@@ -114,13 +127,17 @@ CONSTANTS:
   walktimelong_multiplier: 5
   biketimelong_multiplier: 5
   xfers_wlk_multiplier: 5
+  # TODO: verify whether xfers_drv_multiplier is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   xfers_drv_multiplier: 15
   dacc_ratio_multiplier: 0
   density_index_multiplier: -0.2
   origin_density_index_multiplier: -0.2
   origin_density_index_max: -15
+  # TODO: verify whether ivt_com_multiplier is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   ivt_com_multiplier: 0.80
+  # TODO: verify whether ivt_exp_multiplier is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   ivt_exp_multiplier: -0.0175
+  # TODO: verify whether ivt_hvy_multiplier is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
   ivt_hvy_multiplier: 0.80
 # so far, we can use the same spec as for non-joint tours
 preprocessor:
