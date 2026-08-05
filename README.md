@@ -9,7 +9,7 @@ This project uses uv as Python manager. To install uv, please visit https://docs
 Once uv is installed on the machine, create a new Python environment for lighthouse and install dependencies.
 
 ```bash
-uv sync --lock
+uv sync --locked
 ```
 
 To run the model with test data, use the following command:
