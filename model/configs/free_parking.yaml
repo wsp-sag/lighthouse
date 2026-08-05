@@ -6,24 +6,7 @@ LOGIT_TYPE: MNL
 
 FREE_PARKING_ALT: 0
 
-CONSTANTS:
-  ID_SAN_FRANCISCO: 1
-  # TODO: verify whether ID_SAN_MATEO is still needed by free_parking.csv; update the spec or remove this constant if it is truly dead
-  ID_SAN_MATEO: 2
-  # TODO: verify whether ID_SANTA_CLARA is still needed by free_parking.csv; update the spec or remove this constant if it is truly dead
-  ID_SANTA_CLARA: 3
-  # TODO: verify whether ID_ALAMEDA is still needed by free_parking.csv; update the spec or remove this constant if it is truly dead
-  ID_ALAMEDA: 4
-  # TODO: verify whether ID_CONTRA_COSTA is still needed by free_parking.csv; update the spec or remove this constant if it is truly dead
-  ID_CONTRA_COSTA: 5
-  # TODO: verify whether ID_SOLANO is still needed by free_parking.csv; update the spec or remove this constant if it is truly dead
-  ID_SOLANO: 6
-  # TODO: verify whether ID_NAPA is still needed by free_parking.csv; update the spec or remove this constant if it is truly dead
-  ID_NAPA: 7
-  # TODO: verify whether ID_SONOMA is still needed by free_parking.csv; update the spec or remove this constant if it is truly dead
-  ID_SONOMA: 8
-  # TODO: verify whether ID_MARIN is still needed by free_parking.csv; update the spec or remove this constant if it is truly dead
-  ID_MARIN: 9
+CONSTANTS: {}
 
 preprocessor:
   SPEC: free_parking_annotate_persons_preprocessor
