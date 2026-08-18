@@ -1,0 +1,9 @@
+Label,Description,Expression,3-5 hours,5-7 hours,7-9 hours,9+ hours
+util_asc,alternative specific constant,@1,coef_acs_3_5,coef_acs_5_7,,coef_asc_9_plus
+util_part_time,part-time worker,@df.ptype==2,coef_part_time_3_5,coef_part_time_5_7,,coef_part_time_9_plus
+util_university_student,university student,@df.ptype==3,coef_university_student_3_5,coef_university_student_5_7,,
+util_work_from_home,work from home,work_from_home,coef_work_from_home_3_7,coef_work_from_home_3_7,,coef_work_from_home_9_plus
+util_hybrid,hybrid worker,(cdap_activity=='M')&(ptype<3),,,coef_hybrid_7_plus,coef_hybrid_7_plus
+util_income_100_150,income 100-150k,(income_in_thousands>=100)&(income_in_thousands<150),coef_income_100_150_3_7,coef_income_100_150_3_7,,
+util_income_150_plus,income 150k+,(income_in_thousands>=150),coef_income_150_plus_3_5,coef_income_150_plus_5_7,,
+util_workplace_mc_logsum,workplace mode choice logsum,"@np.where(df.workplace_zone_id > -1, df.workplace_modechoice_logsum, 0)",coef_workplace_mc_logsum_3_7,coef_workplace_mc_logsum_3_7,,
