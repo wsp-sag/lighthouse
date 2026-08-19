@@ -234,8 +234,7 @@ output_tables:
 # area_types less than this are considered urban
 urban_threshold: 4
 cbd_threshold: 2
-# TODO: update rural_threshold to be consistent with the definition of rural in the land_use table (area_type=6)
-rural_threshold: 6
+rural_threshold: 5
 
 # - value of time
 min_value_of_time: 1
