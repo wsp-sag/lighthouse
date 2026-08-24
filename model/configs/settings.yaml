@@ -177,6 +177,7 @@ models:
   - compute_accessibility
   - school_location
   - workplace_location
+  - constraint_can_travel_alone
   - auto_ownership_simulate
   - free_parking
   - cdap_simulate
