@@ -1,0 +1,5 @@
+Label,Description,Expression,can_travel_alone,cannot_travel_alone
+util_asc,ASC,@1,,coef_cannot_acs
+util_min_travel_alone_age,cannot travel alone if younger than this threshold age (set to zero in special scenarios to lift this constraint),@df.age<MIN_TRAVEL_ALONE_AGE,coef_unavailable,
+util_senior_adults_65_to_80,person age is between 65 to 80,(age>=65)&(age<80),,coef_age_65_80
+util_senior_adults_80_plus,person age is older than 80,age>=80,,coef_age_80_plus

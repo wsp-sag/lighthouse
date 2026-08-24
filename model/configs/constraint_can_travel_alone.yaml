@@ -1,0 +1,8 @@
+---
+SPEC: constraint_can_travel_alone.csv
+COEFFICIENTS: constraint_can_travel_alone_coefficients.csv
+
+LOGIT_TYPE: MNL
+
+CONSTANTS:
+  MIN_TRAVEL_ALONE_AGE: 15 # Minimum age at which a person can travel alone
