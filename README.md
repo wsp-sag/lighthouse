@@ -15,7 +15,7 @@ uv sync --locked
 To run the model with test data, use the following command:
 
 ```bash
-uv run activitysim run -c model/configs_mp -c model/configs -d model/data -o model/output --ext model/extensions
+uv run activitysim run -c model/configs_mp -c model/configs -d model/data -o model/output --ext extensions
 ```
 
 ## Contents
