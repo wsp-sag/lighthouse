@@ -8,7 +8,7 @@ Number of escort tours tours undertaken by the person,0.9018,coef_number_of_esco
 Arrival later than 17:00.,0.389,coef_arrival_later_than_17_00_
 Dummy for the duration of the tour being equal or greater than or equal to 9 hours ,0.8434,coef_dummy_for_the_duration_of_the_tour_being_equal_or_greater_than_or_equal_to_9_hours_
 HH accesibility for inbound tours. Interaction,0.2481,coef_hh_accesibility_for_inbound_tours_interaction
-No stops if tour mode is driveTransit,-999.0,coef_no_stops_if_tour_mode_is_drivetransit
+No stops if tour mode is driveTransit,-999.0,coef_no_stops_if_tour_mode_is_drive_transit
 Alternative specific constant for return  stops,-2.003,coef_alternative_specific_constant_for_return_stops_0out_1in
 Alternative specific constant for return  stops,-3.51,coef_alternative_specific_constant_for_return_stops_0out_2in
 Alternative specific constant for the total number of stops,0.0,coef_alternative_specific_constant_for_the_total_number_of_stops_0out_2in
