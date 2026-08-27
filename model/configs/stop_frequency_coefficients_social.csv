@@ -8,7 +8,7 @@ At least one kid and one adult participate in the tour,0.37,coef_at_least_one_ki
 Arrival later than 17:00.,-0.45,coef_arrival_later_than_17_00_
 Dummy for the duration of the tour being equal or greater than or equal to 3 hours ,1.31,coef_dummy_for_the_duration_of_the_tour_being_equal_or_greater_than_or_equal_to_3_hours_
 dummy for distance in miles,-0.01,coef_dummy_for_distance_in_miles
-No stops if tour mode is driveTransit,-999.0,coef_no_stops_if_tour_mode_is_drivetransit
+No stops if tour mode is driveTransit,-999.0,coef_no_stops_if_tour_mode_is_drive_transit
 Alternative specific constant for return  stops,-1.12,coef_alternative_specific_constant_for_return_stops_0out_1in
 Alternative specific constant for return  stops on joint tours,-1.329,coef_alternative_specific_constant_for_return_stops_on_joint_tours_0out_1in
 Dummy for a return visiting tour,-0.64,coef_dummy_for_a_return_visiting_tour
