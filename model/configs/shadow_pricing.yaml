@@ -12,14 +12,6 @@ MAX_ITERATIONS: 10
 # number of shadow price iterations for warm start (after loading saved shadow_prices)
 MAX_ITERATIONS_SAVED: 1
 
-# ignore criteria for zones smaller than size_threshold
-SIZE_THRESHOLD: 10
-
-# zone passes if modeled is within percent_tolerance of  predicted_size
-PERCENT_TOLERANCE: 5
-
-# max percentage of zones allowed to fail
-FAIL_THRESHOLD: 10
 
 ## Shadow pricing method
 # SHADOW_PRICE_METHOD: ctramp
@@ -34,7 +26,7 @@ TARGET_THRESHOLD: 20
 # zone passes if modeled is within percent_tolerance of  predicted_size
 PERCENT_TOLERANCE: 5
 # max percentage of zones allowed to fail
-FAIL_THRESHOLD: 1
+FAIL_THRESHOLD: 10
 # apply different targets for each segment specified in destination_size_terms.csv
 school_segmentation_targets:
   # format is segment: land_use_column
