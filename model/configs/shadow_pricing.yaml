@@ -39,8 +39,7 @@ FAIL_THRESHOLD: 1
 school_segmentation_targets:
   # format is segment: land_use_column
   university: tot_collegeenroll
-  highschool: HSENROLL
-  gradeschool: AGE0519
+  schoolk12: HSENROLL
 
 # if target names are the same, they will be combined together
 workplace_segmentation_targets:

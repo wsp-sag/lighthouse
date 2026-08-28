@@ -22,8 +22,7 @@ LOGSUM_SETTINGS: tour_mode_choice.yaml
 LOGSUM_PREPROCESSOR: nontour_preprocessor
 LOGSUM_TOUR_PURPOSE:
   university: univ
-  highschool: school
-  gradeschool: school
+  schoolk12: school
 annotate_persons:
   SPEC: annotate_persons_school
   DF: persons
@@ -42,9 +41,8 @@ CHOOSER_SEGMENT_COLUMN_NAME: school_segment
 CHOOSER_FILTER_COLUMN_NAME: is_student
 # FIXME - these are assigned to persons in annotate_persons. we need a better way to manage this
 SEGMENT_IDS:
-  university: 3  # SCHOOL_SEGMENT_UNIV
-  highschool: 2  # SCHOOL_SEGMENT_HIGH
-  gradeschool: 1  # SCHOOL_SEGMENT_GRADE
+  university: 2  # SCHOOL_SEGMENT_UNIV
+  schoolk12: 1  # SCHOOL_SEGMENT_K12
 # model adds these tables (informational - not added if commented out)
 SHADOW_PRICE_TABLE: school_shadow_prices
 MODELED_SIZE_TABLE: school_modeled_size
