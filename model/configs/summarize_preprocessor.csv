@@ -1,143 +1,101 @@
 Description,Target,Expression
-
 ## Constants
 ,_WALK_SPEED,3
 ,_BIKE_SPEED,12
-
 ,_SHORT_WALK, 0.333 # miles
-
-,_SINGLE_TNC_WAIT_TIME, 8.4 # minutes
-,_SHARED_TNC_WAIT_TIME, 11.0 # minutes
-,_TAXI_WAIT_TIME, 13.3 # minutes
-
-,_TAXI_BASE_FARE, 2.20 # $
-,_TAXI_COST_PER_MILE, 2.30 # $
-,_TAXI_COST_PER_MINUTE, 0.10 # $
-
-,_TNC_SINGLE_BASE_FARE, 2.20 # $
-,_TNC_SINGLE_COST_PER_MILE, 1.33 # $
-,_TNC_SINGLE_COST_PER_MINUTE, 0.24 # $
-,_TNC_SINGLE_COST_MINIMUM, 7.20 # $
-
-,_TNC_SHARED_BASE_FARE, 2.20 # $
-,_TNC_SHARED_COST_PER_MILE, 0.53 # $
-,_TNC_SHARED_COST_PER_MINUTE, 0.10 # $
-,_TNC_SHARED_COST_MINIMUM, 3.00 # $
-,_TNC_SHARED_IVT_FACTOR, 1.5 # $
-
+,_RIDEHAIL_WAIT_TIME, 8.4 # minutes
+,_RIDEHAIL_BASE_FARE, 2.20 # $S
+,_RIDEHAIL_COST_PER_MILE, 2.30 # $
+,_RIDEHAIL_COST_PER_MINUTE, 0.10 # $
 ## Distances
 # Auto distance
 ,_sov_dist,trip_odt_skims['dist']
 ,_hov2_dist,trip_odt_skims['dist']
 ,_hov3_dist,trip_odt_skims['dist']
-
+,_ridehail_dist,trip_odt_skims['dist']
 # Transit auto access/eggress distance (miles x 100)
 ,_drv_transit_wlk_ddist,trip_odt_skims['ta_ddist']/100
-
 # Bike distance
 ,_bike_dist,trip_od_skims['dist_nm']
-
 # Walk distance
 ,_walk_dist,trip_od_skims['dist_nm']
-
 ## Times
 # Auto time
 ,_da_time,trip_odt_skims['da_time']
 ,_sr_time,trip_odt_skims['sr_time']
 ,_hov3_time,trip_odt_skims['sr_time']
-
+,_ridehail_time,trip_odt_skims['sr_time']
 # Transit vehicle time (minutes x 100)
 ,_drv_transit_wlk_totivt,trip_odt_skims['ta_ivtt']/100
 ,_wlk_transit_wlk_totivt,trip_odt_skims['tw_ivtt']/100
-
 # Initial wait time (IWAIT)
 ,_drv_transit_wlk_iwait,trip_odt_skims['ta_iwait']/100
 ,_wlk_transit_wlk_iwait,trip_odt_skims['tw_iwait']/100
-
 # Transfer wait time (XWAIT)
 ,_drv_transit_wlk_xwait,trip_odt_skims['ta_xwait']/100
 ,_wlk_transit_wlk_xwait,trip_odt_skims['tw_xwait']/100
-
 # Walk access time (WACC) (for all transit modes)
 ,_wlk_wacc,_SHORT_WALK / _WALK_SPEED * 60 # Constant assumption of short walk access
-
 # Auxiliary walk time (WAUX)
 ,_drv_transit_wlk_time,trip_odt_skims['ta_walk']/100
 ,_wlk_transit_wlk_time,trip_odt_skims['tw_walk']/100
-
 # Walk egress time (WEGR) (for all transit modes)
 ,_wlk_wegr,_SHORT_WALK / _WALK_SPEED * 60 # Constant assumption of short walk egress
-
 # Drive access/egress time (DTIM)
 ,_drv_transit_wlk_dtim,trip_odt_skims['ta_dtime']/100
-
 ## Costs
 # Private auto tolls
 ,_sov_toll,trip_odt_skims['da_toll']
 ,_hov2_toll,trip_odt_skims['sr_toll']
 ,_hov3_toll,trip_odt_skims['sr_toll']
-
+,_ridehail_toll,trip_odt_skims['sr_toll']
 # Transit fares
 ,_drv_transit_wlk_far,trip_odt_skims['ta_fare']
 ,_wlk_transit_wlk_far,trip_odt_skims['tw_fare']
-
 ## Mode Indicators
 # Private Auto
 ,_sov_mode,trips_merged['trip_mode'] == 'DRIVEALONE'
 ,_hov2_mode,trips_merged['trip_mode'] == 'SHARED2'
 ,_hov3_mode,trips_merged['trip_mode'] == 'SHARED3'
-
 # Taxi/TNC
 ,_ridehail_mode,trips_merged['trip_mode'] == 'RIDEHAIL'
-
 # Transit
 ,_drive_transit_mode,trips_merged['trip_mode'] == 'DRIVE_TRANSIT'
 ,_walk_transit_mode,trips_merged['trip_mode'] == 'WALK_TRANSIT'
-
 # Bike
 ,_bike_mode,trips_merged['trip_mode'] == 'BIKE'
-
 # Walk
 ,_walk_mode,trips_merged['trip_mode'] == 'WALK'
-
-### Calcs
-## Time
-# Auto
+#### Calcs
+### Time
+## Auto
 ,_transit_auto_time,(_drive_transit_mode * _drv_transit_wlk_dtim)
-,_tnc_single_time,(_tnc_single_mode * _sr_time)
-,_tnc_shared_time,(_tnc_shared_mode * _hov3_time * _TNC_SHARED_IVT_FACTOR)
-,_taxi_time,(_taxi_mode * _sr_time)
-,auto_time,(_sov_mode * _da_time) + (_hov2_mode * _sr_time) + (_hov3_mode * _hov3_time) + (_sovtoll_mode * _da_time) + (_hov2toll_mode * _hov2toll_time) + (_hov3toll_mode * _hov3toll_time) + _transit_auto_time + _tnc_single_time + _tnc_shared_time + _taxi_time
+,auto_time,(_sov_mode * _da_time) + (_hov2_mode * _sr_time) + (_hov3_mode * _hov3_time) + (_ridehail_mode * _ridehail_time)
 # Transit Vehicle
-transit_vehicle_time,(_drive_transit_mode * _drv_transit_wlk_totivt) + (_walk_transit_mode * _wlk_transit_wlk_totivt)
+,transit_vehicle_time,(_drive_transit_mode * _drv_transit_wlk_totivt) + (_walk_transit_mode * _wlk_transit_wlk_totivt)
 # Wait
 ,_transit_initial_wait_time,(_drive_transit_mode * _drv_transit_wlk_iwait) + (_walk_transit_mode * _wlk_transit_wlk_iwait)
 ,_transit_transfer_wait_time,(_drive_transit_mode * _drv_transit_wlk_xwait) + (_walk_transit_mode * _wlk_transit_wlk_xwait)
-,wait_time,_transit_initial_wait_time + _transit_transfer_wait_time + (_taxi_mode * _TAXI_WAIT_TIME) + (_tnc_single_mode * _SINGLE_TNC_WAIT_TIME) + (_tnc_shared_mode + _SHARED_TNC_WAIT_TIME)
+,wait_time,_transit_initial_wait_time + _transit_transfer_wait_time + (_ridehail_mode * _RIDEHAIL_WAIT_TIME)
 # Walk
 ,_transit_walk_access_time,(_walk_transit_mode * _wlk_wacc)
-,_transit_walk_aux_time,(_drive_transit_mode * _drv_transit_wlk_waux) + (_walk_transit_mode * _wlk_transit_wlk_waux)
 ,_transit_walk_egress_time,(_drive_transit_mode * _wlk_wegr) + (_walk_transit_mode * _wlk_wegr)
-,walk_time,(_walk_mode * _walk_dist / _WALK_SPEED * 60) + _transit_walk_access_time + _transit_walk_aux_time + _transit_walk_egress_time
+,walk_time,(_walk_mode * _walk_dist / _WALK_SPEED * 60) + _transit_walk_access_time + _transit_walk_egress_time
 # Bike
 ,bike_time,_bike_mode * _bike_dist / _BIKE_SPEED * 60
 # Total
 ,total_time,auto_time + transit_vehicle_time + wait_time + walk_time + bike_time
-
 ## Distance
 # Auto
-,_tnc_single_distance,(_tnc_single_mode * _hov2_dist)
-,_tnc_shared_distance,(_tnc_shared_mode * _hov3_dist) # Doesn't account for VMT savings from sharing
-,_taxi_distance,(_taxi_mode * _hov2_dist)
-,auto_distance,(_sov_mode * _sov_dist) + (_hov2_mode * _hov2_dist) + (_hov3_mode * _hov3_dist) + (_sovtoll_mode * _sovtoll_dist) + (_hov2toll_mode * _hov2toll_dist) + (_hov3toll_mode * _hov3toll_dist) + (_drive_com_mode * _drv_com_wlk_ddist) + (_drive_exp_mode * _drv_exp_wlk_ddist) + (_drive_hvy_mode * _drv_hvy_wlk_ddist) + (_drive_loc_mode * _drv_loc_wlk_ddist) + (_drive_lrf_mode * _drv_lrf_wlk_ddist) + _tnc_single_distance + _tnc_shared_distance + _taxi_distance
+,_ridehail_distance,(_ridehail_mode * _ridehail_dist)
+,auto_distance,(_sov_mode * _sov_dist) + (_hov2_mode * _hov2_dist) + (_hov3_mode * _hov3_dist) + (_ridehail_mode * _ridehail_distance)
 # Walk
 ,walk_distance,(walk_time / 60 * _WALK_SPEED)
 # Bike
 ,bike_distance,_bike_mode * _bike_dist
-
 ## Cost
 ,_transit_fare_cost,(_drive_transit_mode * _drv_transit_wlk_far) + (_walk_transit_mode * _wlk_transit_wlk_far)
-,_ridehail_cost,_TAXI_BASE_FARE + (_taxi_distance * _TNC_SHARED_COST_PER_MILE) + (_taxi_time * _TAXI_COST_PER_MINUTE)
-,fare_cost,_transit_fare_cost + _tnc_single_cost + _tnc_shared_cost + _taxi_cost
-,toll_cost,(_sov_mode * _sov_btoll) + (_hov2_mode * _hov2_btoll) + (_hov3_mode * _hov3_btoll) + (_sovtoll_mode * _sovtoll_btoll) + (_sovtoll_mode * _sovtoll_vtoll) + (_hov2toll_mode * _hov2toll_btoll) + (_hov2toll_mode * _hov2toll_vtoll) + (_hov3toll_mode * _hov3toll_btoll) + (_hov3toll_mode * _hov3toll_vtoll) + (_tnc_single_mode * _hov2toll_vtoll) + (_tnc_shared_mode * _hov3toll_vtoll) + (_taxi_mode * _hov2toll_vtoll)
+,_ridehail_cost,_RIDEHAIL_BASE_FARE + (_ridehail_distance * _RIDEHAIL_COST_PER_MILE) + (_ridehail_time * _RIDEHAIL_COST_PER_MINUTE)
+,fare_cost,_transit_fare_cost + _ridehail_cost
+,toll_cost,(_sov_mode * _sov_toll) + (_hov2_mode * _hov2_toll) + (_hov3_mode * _hov3_toll) + (_ridehail_mode * _ridehail_toll)
 ,total_cost,fare_cost + toll_cost

@@ -200,7 +200,7 @@ models:
   - track_skim_usage
   - write_trip_matrices
   - write_tables
-  # - summarize # needed only for SimWrapper Viz
+  - summarize # needed only for SimWrapper Viz
 output_tables:
   h5_store: false
   action: include
@@ -234,7 +234,7 @@ output_tables:
 # area_types less than this are considered urban
 urban_threshold: 4
 cbd_threshold: 2
-rural_threshold: 6
+rural_threshold: 5
 
 # - value of time
 min_value_of_time: 1
@@ -256,4 +256,4 @@ household_median_value_of_time:
 # require: always use sharrow compiler, if fails, raise error. use this if max performance is desired.
 # test: run both sharrow compiler and pandas, compare results, raise error if they differ. use this to validate sharrow compiler, not recommended for production runs.
 
-# sharrow: require
+#sharrow: require
