@@ -44,7 +44,6 @@ workplace_segmentation_targets:
 # ctramp-style shadow_pricing_method parameters
 DAMPING_FACTOR: 1
 
-# daysim-style shadow_pricing_method parameters
-# FIXME should these be the same as PERCENT_TOLERANCE and FAIL_THRESHOLD above?
-DAYSIM_ABSOLUTE_TOLERANCE: 50
-DAYSIM_PERCENT_TOLERANCE: 10
+SEGMENT_TO_NAME:
+  school: school_segment
+  workplace: income_segment
