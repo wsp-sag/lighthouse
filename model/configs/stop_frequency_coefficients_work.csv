@@ -22,7 +22,7 @@ Evening Arrival (>=19:00) Interacted with return tours,0.31,coef_evening_arrival
 Dummy for the duration of the tour being equal or greater than or equal to 11 hours,0.6,coef_dummy_for_the_duration_of_the_tour_being_equal_or_greater_than_or_equal_to_11_hours
 dummy for distance less than 20 Miles,-0.22,coef_dummy_for_distance_less_than_20_miles
 dummy for distance in miles,0.01,coef_dummy_for_distance_in_miles
-No stops if tour mode is driveTransit,-999.0,coef_no_stops_if_tour_mode_is_drivetransit
+No stops if tour mode is driveTransit,-999.0,coef_no_stops_if_tour_mode_is_drive_transit
 Alternative specific constant for return  stops,-0.445,coef_alternative_specific_constant_for_return_stops_0out_1in
 Number of subtours in the tour,0.19,coef_number_of_subtours_in_the_tour
 Alternative specific constant for return  stops,-1.775,coef_alternative_specific_constant_for_return_stops_0out_2in
