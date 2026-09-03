@@ -59,6 +59,7 @@ dest terminal time not counted at home,_dest_terminal_time,"np.where(inbound & l
 ,origin_zone_sharedTNC_wait_time_mean,"origin_density.map({k: v for k, v in TNC_shared_waitTime_mean.items()})"
 ,origin_zone_sharedTNC_wait_time_sd,"origin_density.map({k: v for k, v in TNC_shared_waitTime_sd.items()})"
 ,origSharedTNCWaitTime,"rng.lognormal_for_df(df, mu=origin_zone_sharedTNC_wait_time_mean, sigma=origin_zone_sharedTNC_wait_time_sd, broadcast=True, scale=True).clip(min_waitTime, max_waitTime)"
+,totalWaitRideHail,origSingleTNCWaitTime
 #,,
 ,sov_available,odt_skims['da_time']>0
 ,hov2_available,odt_skims['sr_time']>0
