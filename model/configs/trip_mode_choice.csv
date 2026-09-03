@@ -81,11 +81,11 @@ util_DRIVE_LOC_inbound_Drive_time,DRIVE_LOC inbound - Drive time,@df.inbound * c
 util_DRIVE_LOC_inbound_Walk_time,DRIVE_LOC inbound - Walk time,@df.inbound * coef_waux_multiplier * odt_skims['ta_walk']/TRANSIT_SCALE_FACTOR,,,,,,,coef_ivt,
 util_DRIVE_LOC_inbound_Fare_and_operating_cost,DRIVE_LOC inbound - Fare and operating cost,@df.inbound * ivt_cost_multiplier * df.ivot * (odt_skims['ta_fare'] + costPerMile*odt_skims['ta_ddist']/TRANSIT_SCALE_FACTOR),,,,,,,coef_ivt,
 util_DRIVE_LOC_inbound_Ratio_of_drive_access_distance_to_OD_distance,DRIVE_LOC inbound - Ratio of drive access distance to OD distance,@df.outbound * dacc_ratio_multiplier * (odt_skims['ta_ddist']/TRANSIT_SCALE_FACTOR)/ (od_skims['DIST']),,,,,,,1,
-#,Ridehail (taxi & TNC),,,,,,,,,
-util_Taxi_In_vehicle_time,Taxi - In-vehicle time,@odt_skims['sr_time'],,,,,,,,coef_ivt
-util_Taxi_Wait_time,Taxi - Wait time,@ridehail_wait_time_multiplier * df.origTaxiWaitTime,,,,,,,,coef_ivt
-util_Taxi_Tolls,Taxi - Tolls,@ivt_cost_multiplier * df.ivot * odt_skims['sr_toll'],,,,,,,,coef_ivt
-util_Taxi_Fare,Taxi - Fare,@ivt_cost_multiplier * df.ivot * (Taxi_baseFare + odt_skims['rs_fare'] * Taxi_costPerMile + odt_skims['sr_time'] * Taxi_costPerMinute)*100,,,,,,,,coef_ivt
+#,Ridehail (TNC & Taxi),,,,,,,,,
+util_RIDEHAIL_In_vehicle_time,RIDEHAIL - In-vehicle time,@odt_skims['sr_time'],,,,,,,,coef_ivt
+util_RIDEHAIL_Wait_time,RIDEHAIL - Wait time,@ridehail_wait_time_multiplier * df.totalWaitRideHail,,,,,,,,coef_ivt
+util_RIDEHAIL_Tolls,RIDEHAIL - Tolls,@ivt_cost_multiplier * df.ivot * odt_skims['sr_toll'],,,,,,,,coef_ivt
+util_RIDEHAIL_Fare,RIDEHAIL - Fare,@ivt_cost_multiplier * df.ivot * ( (TNC_single_baseFare + odt_skims['dist'] * TNC_single_costPerMile + odt_skims['sr_time'] * TNC_single_costPerMinute) )*100,,,,,,,,coef_ivt
 #,,,,,,,,,,
 util_tour_mode_is_auto,Auto tour mode availability,tour_mode_is_auto,,,,,-999,-999,-999,
 util_tour_mode_is_walk,Walk tour mode availability,tour_mode_is_walk,-999,-999,-999,,-999,-999,-999,
