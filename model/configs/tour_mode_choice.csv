@@ -99,7 +99,7 @@ util_Walk_to_Transit_Auto_sufficient,Walk to Transit - Auto sufficient,@(df.is_i
 util_Drive_to_Transit_Zero_auto,Drive to Transit - Zero auto,@(df.is_indiv & (df.auto_ownership == 0)),,,,,,,drive_transit_ASC_no_auto,
 util_Drive_to_Transit_Auto_deficient,Drive to Transit - Auto deficient,@(df.is_indiv & (df.auto_ownership < df.num_workers) & (df.auto_ownership > 0)),,,,,,,drive_transit_ASC_auto_deficient,
 util_Drive_to_Transit_Auto_sufficient,Drive to Transit - Auto sufficient,@(df.is_indiv & (df.auto_ownership >= df.num_workers) & (df.auto_ownership > 0)),,,,,,,drive_transit_ASC_auto_sufficient,
-util_Ridehaul_Zero_auto,Ridehaul - Zero auto,@(df.is_indiv & (df.auto_ownership == 0)),,,,,,,,ridehail_ASC_no_auto
-util_Ridehaul_Auto_deficient,Ridehaul - Auto deficient,@(df.is_indiv & (df.auto_ownership < df.num_workers) & (df.auto_ownership > 0)),,,,,,,,ridehail_ASC_auto_deficient
-util_Ridehaul_Auto_sufficient,Ridehaul - Auto sufficient,@(df.is_indiv & (df.auto_ownership >= df.num_workers) & (df.auto_ownership > 0)),,,,,,,,ridehail_ASC_auto_sufficient
+util_Ridehail_Zero_auto,Ridehail - Zero auto,@(df.is_indiv & (df.auto_ownership == 0)),,,,,,,,ridehail_ASC_no_auto
+util_Ridehail_Auto_deficient,Ridehail - Auto deficient,@(df.is_indiv & (df.auto_ownership < df.num_workers) & (df.auto_ownership > 0)),,,,,,,,ridehail_ASC_auto_deficient
+util_Ridehail_Auto_sufficient,Ridehail - Auto sufficient,@(df.is_indiv & (df.auto_ownership >= df.num_workers) & (df.auto_ownership > 0)),,,,,,,,ridehail_ASC_auto_sufficient
 #,,,,,,,,,,
