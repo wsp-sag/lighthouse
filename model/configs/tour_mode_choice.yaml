@@ -52,14 +52,6 @@ CONSTANTS:
   upperMD: 15
   # TODO: verify whether upperPM is still needed by tour_mode_choice.csv; update the spec or remove this constant if it is truly dead
   upperPM: 19
-  # TODO: verify whether TNC_single_baseFare is still needed by tour_mode_choice.csv; update the spec or remove this constant if it is truly dead
-  TNC_single_baseFare: 2.20
-  # TODO: verify whether TNC_single_costPerMile is still needed by tour_mode_choice.csv; update the spec or remove this constant if it is truly dead
-  TNC_single_costPerMile: 1.33
-  # TODO: verify whether TNC_single_costPerMinute is still needed by tour_mode_choice.csv; update the spec or remove this constant if it is truly dead
-  TNC_single_costPerMinute: 0.24
-  # TODO: verify whether TNC_single_costMinimum is still needed by tour_mode_choice.csv; update the spec or remove this constant if it is truly dead
-  TNC_single_costMinimum: 7.20
   TNC_single_waitTime_mean: 
     1: 3.0
     2: 6.3

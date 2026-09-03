@@ -60,29 +60,6 @@ CONSTANTS:
   I_DRIVE_TRANSIT_MODES: [7]
   I_RIDE_HAIL_MODES: [8]
   # RIDEHAIL Settings
-  Taxi_baseFare: 2.20
-  Taxi_costPerMile: 2.30
-  Taxi_costPerMinute: 0.10
-  Taxi_waitTime_mean:
-    1: 5.5
-    2: 9.5
-    3: 13.3
-    4: 17.3
-    5: 26.5
-  Taxi_waitTime_sd:
-    1: 0
-    2: 0
-    3: 0
-    4: 0
-    5: 0
-  # TODO: verify whether TNC_single_baseFare is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
-  TNC_single_baseFare: 2.20
-  # TODO: verify whether TNC_single_costPerMile is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
-  TNC_single_costPerMile: 1.33
-  # TODO: verify whether TNC_single_costPerMinute is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
-  TNC_single_costPerMinute: 0.24
-  # TODO: verify whether TNC_single_costMinimum is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
-  TNC_single_costMinimum: 7.20
   TNC_single_waitTime_mean:
     1: 3.0
     2: 6.3
@@ -95,16 +72,6 @@ CONSTANTS:
     3: 0
     4: 0
     5: 0
-  # TODO: verify whether TNC_shared_baseFare is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
-  TNC_shared_baseFare: 2.20
-  # TODO: verify whether TNC_shared_costPerMile is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
-  TNC_shared_costPerMile: 0.53
-  # TODO: verify whether TNC_shared_costPerMinute is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
-  TNC_shared_costPerMinute: 0.10
-  # TODO: verify whether TNC_shared_costMinimum is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
-  TNC_shared_costMinimum: 3.00
-  # TODO: verify whether TNC_shared_IVTFactor is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
-  TNC_shared_IVTFactor: 1.5
   TNC_shared_waitTime_mean:
     1: 5.0
     2: 8.0
