@@ -78,8 +78,8 @@ util_Drive_to_Transit_distance_penalty,Drive to Transit - distance penalty,@drvt
 #,Ridehail (TNC & Taxi),,,,,,,,,
 util_RIDEHAIL_In_vehicle_time,RIDEHAIL - In-vehicle time,@(odt_skims['sr_time'] + dot_skims['sr_time']),,,,,,,,coef_ivt
 util_RIDEHAIL_Wait_time,RIDEHAIL - Wait time,@ridehail_wait_time_multiplier * df.totalWaitRideHail,,,,,,,,coef_ivt
-util_RIDEHAIL_Tolls,RIDEHAIL - Tolls,@ivt_cost_multiplier * df.ivot * (odt_skims['sr_toll'] + dot_skims['sr_toll']),,,,,,,,coef_ivt
-util_RIDEHAIL_Fare,RIDEHAIL - Fare,@ivt_cost_multiplier * df.ivot * ( (TNC_single_baseFare * 2 + (odt_skims['dist'] + dot_skims['dist']) * TNC_single_costPerMile) + ((odt_skims['sr_time'] + dot_skims['sr_time']) * TNC_single_costPerMinute) )*100,,,,,,,,coef_ivt
+util_RIDEHAIL_Tolls,RIDEHAIL - Tolls,@ivt_cost_multiplier * df.ivot * 100 * (odt_skims['sr_toll'] + dot_skims['sr_toll']),,,,,,,,coef_ivt
+util_RIDEHAIL_Fare,RIDEHAIL - Fare,@ivt_cost_multiplier * df.ivot * 100 * (odt_skims['rs_fare'] + dot_skims['rs_fare']),,,,,,,,coef_ivt
 #,Auto sufficiency terms,,,,,,,,,
 util_Walk_ASC_Zero_auto,Walk ASC - Zero auto,@(df.is_indiv & (df.auto_ownership == 0)),,,,walk_ASC_no_auto,,,,
 util_Walk_ASC_Auto_deficient,Walk ASC - Auto deficient,@(df.is_indiv & (df.auto_ownership < df.num_workers) & (df.auto_ownership > 0)),,,,walk_ASC_auto_deficient,,,,
