@@ -21,7 +21,9 @@ import json
 import math
 import os
 import platform
+import re
 import shutil
+import statistics
 import subprocess
 import sys
 import time
@@ -37,6 +39,12 @@ from typing import Any
 ENV_READY = "LIGHTHOUSE_DIAGNOSTIC_UV_READY"
 BYTES_PER_GIB = 1024**3
 DEFAULT_SAMPLE_INTERVAL = 1.0
+COMPONENT_TIMING_PATTERN = re.compile(
+    r"^(?P<timestamp>\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}).*?"
+    r"time to execute run\.(?P<component>.+?) : "
+    r"(?P<seconds>\d+(?:\.\d+)?) seconds",
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -55,6 +63,7 @@ class RunResult:
     return_code: int
     samples: list[dict[str, float | int]] = field(default_factory=list)
     output_summary: dict[str, Any] = field(default_factory=dict)
+    component_timings: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     @property
     def succeeded(self) -> bool:
@@ -383,6 +392,44 @@ def summarize_model_outputs(output_dir: Path) -> dict[str, Any]:
                 "bytes": trips_path.stat().st_size,
             },
         },
+    }
+
+
+def summarize_component_timings(output_dir: Path) -> dict[str, dict[str, Any]]:
+    """Aggregate exact ActivitySim component timings from each process log."""
+
+    observations: dict[str, list[float]] = {}
+    first_finished: dict[str, dt.datetime] = {}
+    for log_path in sorted(output_dir.glob("*activitysim.log")):
+        with log_path.open(encoding="utf-8", errors="replace") as stream:
+            for line in stream:
+                match = COMPONENT_TIMING_PATTERN.search(line)
+                if match is None:
+                    continue
+                component = match.group("component")
+                observations.setdefault(component, []).append(
+                    float(match.group("seconds"))
+                )
+                finished = dt.datetime.strptime(
+                    match.group("timestamp"), "%d/%m/%Y %H:%M:%S"
+                )
+                first_finished[component] = min(
+                    first_finished.get(component, finished), finished
+                )
+
+    ordered_components = sorted(observations, key=first_finished.__getitem__)
+    return {
+        component: {
+            "observations": len(observations[component]),
+            "mean_seconds": statistics.fmean(observations[component]),
+            "population_standard_deviation_seconds": statistics.pstdev(
+                observations[component]
+            ),
+            "min_seconds": min(observations[component]),
+            "max_seconds": max(observations[component]),
+            "durations_seconds": sorted(observations[component]),
+        }
+        for component in ordered_components
     }
 
 
@@ -1030,6 +1077,57 @@ def runtime_table(results: list[RunResult], report_dir: Path) -> str:
     )
 
 
+def component_timing_table(results: list[RunResult]) -> str:
+    measured = [result for result in results if result.multiprocess]
+    components: list[str] = []
+    for result in measured:
+        for component in result.component_timings:
+            if component not in components:
+                components.append(component)
+    if not components:
+        return '<p class="empty">No component timing data are available.</p>'
+
+    run_headings = "".join(
+        f'<th colspan="3">{html.escape(result.label)}</th>' for result in measured
+    )
+    statistic_headings = "".join(
+        '<th class="numeric">Mean (s)</th>'
+        '<th class="numeric">Population SD (s)</th>'
+        '<th class="numeric">N</th>'
+        for _ in measured
+    )
+    rows = []
+    for component in components:
+        cells = []
+        for result in measured:
+            timing = result.component_timings.get(component)
+            if timing is None:
+                cells.append('<td colspan="3">—</td>')
+                continue
+            observations = int(timing["observations"])
+            standard_deviation = (
+                f"{timing['population_standard_deviation_seconds']:.3f}"
+                if observations > 1
+                else "—"
+            )
+            cells.extend(
+                (
+                    f'<td class="numeric">{timing["mean_seconds"]:.3f}</td>',
+                    f'<td class="numeric">{standard_deviation}</td>',
+                    f'<td class="numeric">{observations}</td>',
+                )
+            )
+        rows.append(
+            f"<tr><td><code>{html.escape(component)}</code></td>{''.join(cells)}</tr>"
+        )
+    return (
+        '<table><thead><tr><th rowspan="2">Component</th>'
+        f"{run_headings}</tr><tr>{statistic_headings}</tr></thead><tbody>"
+        + "".join(rows)
+        + "</tbody></table>"
+    )
+
+
 def write_html_report(
     report_path: Path,
     *,
@@ -1113,6 +1211,9 @@ code {{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.92em
 {input_summary_html(input_summary)}
 <h2>Runtime comparison</h2>
 {runtime_table(results, report_path.parent)}
+<h2>Per-component runtime</h2>
+<p class="note">Each observation is ActivitySim's <code>run.&lt;component&gt;</code> elapsed time for one process and excludes multiprocessing orchestration and checkpoint overhead. Multiprocess components report the mean and population standard deviation across all worker shards; population SD is appropriate because every worker is observed rather than sampled. A dash is shown for serial components with only one observation. Component means are not additive wall-clock times because workers run concurrently.</p>
+{component_timing_table(results)}
 <h2>Progressive memory usage</h2>
 <div class="chart"><div class="legend">{legend}</div>{svg_memory_chart(results)}</div>
 <h2>Model output summary</h2>
@@ -1253,9 +1354,20 @@ def run_benchmarks(args: argparse.Namespace, repo_root: Path) -> int:
             break
 
     if not args.quiet:
-        print("Summarizing model outputs...", flush=True)
+        print("Summarizing component timings and model outputs...", flush=True)
     for result in results:
-        if not result.multiprocess or not result.succeeded:
+        if not result.succeeded:
+            continue
+        try:
+            result.component_timings = summarize_component_timings(
+                Path(result.output_dir)
+            )
+        except Exception as error:  # noqa: BLE001 - preserve the benchmark report
+            warnings.warn(
+                f"could not summarize component timings for {result.label}: {error}",
+                stacklevel=2,
+            )
+        if not result.multiprocess:
             continue
         try:
             result.output_summary = summarize_model_outputs(Path(result.output_dir))
