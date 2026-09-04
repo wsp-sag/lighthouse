@@ -22,7 +22,13 @@ logging:
     filelock:
       level: WARN
     sharrow:
-      level: INFO
+      # Warm-cache production runs can emit thousands of per-flow cache-hit
+      # messages. Keep actionable diagnostics without formatting every hit.
+      level: WARNING
+    py.warnings:
+      # Third-party FutureWarnings are repeated inside destination and
+      # mode-choice loops and do not affect simulation results.
+      level: ERROR
     blib2to3:
       level: WARN
     black:
