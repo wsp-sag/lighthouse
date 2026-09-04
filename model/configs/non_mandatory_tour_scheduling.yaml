@@ -20,6 +20,8 @@ SIMULATE_CHOOSER_COLUMNS:
   - adult
 
 compute_settings:
+  # Single-cell timetable checks are faster in the legacy vectorized evaluator.
+  sharrow_skip: true
   use_numexpr: true
 
 explicit_chunk: 0.1

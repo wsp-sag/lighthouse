@@ -23,13 +23,19 @@ TOUR_SPEC_SEGMENTS:
   work: work
   school: school
   univ: school
+# Sharrow's timetable kernels scan adjacent availability windows.  These
+# segments only need a single neighboring cell, so use the faster legacy path.
 SPEC_SEGMENTS:
   work:
     SPEC: tour_scheduling_work.csv
     COEFFICIENTS: tour_scheduling_work_coefficients.csv
+    compute_settings:
+      sharrow_skip: true
   school:
     SPEC: tour_scheduling_school.csv
     COEFFICIENTS: tour_scheduling_school_coefficients.csv
+    compute_settings:
+      sharrow_skip: true
 DESTINATION_FOR_TOUR_PURPOSE:
   work: workplace_zone_id
   school: school_zone_id
