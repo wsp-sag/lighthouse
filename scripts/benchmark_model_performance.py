@@ -9,6 +9,12 @@ The script first synchronizes the locked uv environment, then runs:
 
 The two full runs are monitored by this parent process.  Results are written to
 a self-contained HTML report and CSV/JSON data files under ``model/output``.
+
+Sharrow requires zero-based pipeline zone identifiers and realigns OMX matrices
+using their named mappings.  The legacy skim reader instead retains original
+zone identifiers so its offset mapper also honors those mappings.  This keeps
+the two runs semantically equivalent even when OMX rows are not stored in
+land-use-table order.
 """
 
 from __future__ import annotations
@@ -521,6 +527,12 @@ def run_model_worker(spec_path: Path) -> int:
             "households_sample_size": int(spec["household_sample_size"]),
             "multiprocess": bool(spec["multiprocess"]),
             "sharrow": spec["sharrow"],
+            # Sharrow requires contiguous, zero-based pipeline zone IDs and
+            # realigns skim coordinates to land_use.  With those IDs, the
+            # legacy Numpy skim reader uses them as raw matrix offsets and
+            # cannot honor a shuffled OMX ID mapping.  Retaining original IDs
+            # for legacy runs lets OffsetMapper apply that mapping correctly.
+            "recode_pipeline_columns": bool(spec["sharrow"]),
         }
     )
     if spec.get("process_count") is not None:
@@ -551,6 +563,12 @@ def run_model_worker(spec_path: Path) -> int:
     print(
         "Diagnostic settings: instrument=False, memory_profile=False, "
         "expression_profile=False, track_skim_usage omitted",
+        flush=True,
+    )
+    print(
+        "Zone indexing: "
+        f"recode_pipeline_columns={bool(spec['sharrow'])} "
+        "(OMX mappings honored in both skim implementations)",
         flush=True,
     )
 
@@ -590,6 +608,7 @@ def write_worker_spec(
         "sharrow": sharrow,
         "multiprocess": multiprocess,
         "process_count": process_count if multiprocess else None,
+        "recode_pipeline_columns": bool(sharrow),
     }
     spec_path.write_text(json.dumps(spec, indent=2) + "\n", encoding="utf-8")
     return spec_path
@@ -1228,7 +1247,7 @@ code {{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.92em
 <h3>Tours by type</h3>
 {output_distribution_table(results, "tour_types")}
 <p class="note"><strong>Memory interpretation.</strong> Tree RSS is the sum of resident memory reported for the controller and all workers and can count shared skim pages more than once. Where the operating system permits external access, tree USS is also shown as the sum of private memory and excludes shared pages. macOS commonly restricts child-process USS, in which case the report marks it unavailable instead of substituting an internal profiler. Samples were taken externally every {sample_interval:g} seconds.</p>
-<p class="note"><strong>Benchmark controls.</strong> Both measured runs use all households (<code>households_sample_size: 0</code>) and {html.escape(process_text)} ActivitySim worker processes. ActivitySim instrumentation, memory profiling, expression profiling, trace output, variability checking, loser logging, and <code>track_skim_usage</code> are disabled.</p>
+<p class="note"><strong>Benchmark controls.</strong> Both measured runs use all households (<code>households_sample_size: 0</code>) and {html.escape(process_text)} ActivitySim worker processes. ActivitySim instrumentation, memory profiling, expression profiling, trace output, variability checking, loser logging, and <code>track_skim_usage</code> are disabled. Sharrow runs use zero-based pipeline zone IDs as required; non-Sharrow runs retain original zone IDs so ActivitySim's legacy offset mapper honors OMX mappings even when matrix rows are stored in a different order.</p>
 <p class="note"><strong>Data directory.</strong> <code>{html.escape(str(data_dir))}</code></p>
 <p class="note"><strong>Host.</strong> {html.escape(platform.platform())}; {os.cpu_count() or "unknown"} logical CPUs.</p>
 </main></body></html>
