@@ -27,6 +27,7 @@ import sys
 import time
 import warnings
 import webbrowser
+from collections import Counter
 from contextlib import contextmanager, nullcontext, suppress
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -53,6 +54,7 @@ class RunResult:
     duration_seconds: float
     return_code: int
     samples: list[dict[str, float | int]] = field(default_factory=list)
+    output_summary: dict[str, Any] = field(default_factory=dict)
 
     @property
     def succeeded(self) -> bool:
@@ -80,7 +82,18 @@ def parse_args() -> argparse.Namespace:
         description=(
             "Run cache warm-up, Sharrow, and non-Sharrow Boston model diagnostics "
             "and create an HTML runtime/memory report."
-        )
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""examples:
+  %(prog)s --data-dir /path/to/full/data
+  %(prog)s --data-dir /path/to/full/data --processes 16
+  %(prog)s --output-dir results/timestamp
+  %(prog)s --quiet
+
+An output path whose final component is literally "timestamp" is replaced by
+a timestamped directory name. For example, results/timestamp becomes
+results/20260904-153000-123456.
+""",
     )
     parser.add_argument(
         "--data-dir",
@@ -92,10 +105,22 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--output-dir",
+        "--output-folder",
+        dest="output_dir",
         type=Path,
         help=(
             "new directory for model outputs and the report; defaults to a "
-            "timestamped directory under model/output/diagnostics"
+            "timestamped directory under model/output/diagnostics; a final "
+            "path component named 'timestamp' is replaced by the current timestamp"
+        ),
+    )
+    parser.add_argument(
+        "--processes",
+        type=positive_int,
+        metavar="N",
+        help=(
+            "number of ActivitySim worker processes for each full multiprocess run; "
+            "defaults to num_processes in model/configs_mp/settings.yaml"
         ),
     )
     parser.add_argument(
@@ -112,6 +137,16 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--_worker-spec", type=Path, help=argparse.SUPPRESS)
     return parser.parse_args()
+
+
+def positive_int(value: str) -> int:
+    try:
+        parsed = int(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("must be an integer") from error
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("must be at least 1")
+    return parsed
 
 
 def repository_root() -> Path:
@@ -170,15 +205,206 @@ def validate_data_dir(data_dir: Path) -> None:
         )
 
 
+def find_table_file(directory: Path, stem: str) -> Path:
+    """Find a CSV or Parquet table, preferring Parquet when both are present."""
+
+    for suffix in (".parquet", ".csv"):
+        candidate = directory / f"{stem}{suffix}"
+        if candidate.is_file():
+            return candidate
+    raise FileNotFoundError(
+        f"could not find {stem}.parquet or {stem}.csv in {directory}"
+    )
+
+
+def table_row_count(path: Path) -> int:
+    """Count rows without materializing a table in memory."""
+
+    if path.suffix.lower() == ".parquet":
+        import pyarrow.parquet as pq
+
+        return int(pq.ParquetFile(path).metadata.num_rows)
+
+    with path.open(newline="", encoding="utf-8-sig") as stream:
+        reader = csv.reader(stream)
+        next(reader, None)
+        return sum(1 for row in reader if row)
+
+
+def table_numeric_totals(
+    path: Path, columns: tuple[str, ...]
+) -> dict[str, float | None]:
+    """Calculate selected column totals in bounded memory."""
+
+    totals: dict[str, float | None] = dict.fromkeys(columns)
+    if path.suffix.lower() == ".parquet":
+        import pyarrow.compute as pc
+        import pyarrow.parquet as pq
+
+        parquet = pq.ParquetFile(path)
+        names = {name.casefold(): name for name in parquet.schema.names}
+        selected = [
+            names[name.casefold()] for name in columns if name.casefold() in names
+        ]
+        running = {name: 0.0 for name in selected}
+        for batch in parquet.iter_batches(columns=selected, batch_size=131_072):
+            for index, name in enumerate(selected):
+                value = pc.sum(batch.column(index)).as_py()
+                if value is not None:
+                    running[name] += float(value)
+        for requested in columns:
+            actual = names.get(requested.casefold())
+            if actual is not None:
+                totals[requested] = running[actual]
+        return totals
+
+    with path.open(newline="", encoding="utf-8-sig") as stream:
+        reader = csv.DictReader(stream)
+        names = {name.casefold(): name for name in (reader.fieldnames or ())}
+        selected = {
+            requested: names[requested.casefold()]
+            for requested in columns
+            if requested.casefold() in names
+        }
+        running = {name: 0.0 for name in selected}
+        for row in reader:
+            for requested, actual in selected.items():
+                value = row.get(actual)
+                if value not in (None, ""):
+                    running[requested] += float(value)
+        totals.update(running)
+    return totals
+
+
+def summarize_input_data(data_dir: Path) -> dict[str, Any]:
+    """Describe the population, zones, and skim inputs used by the benchmark."""
+
+    table_paths = {
+        name: find_table_file(data_dir, name)
+        for name in ("households", "persons", "land_use")
+    }
+    table_rows = {name: table_row_count(path) for name, path in table_paths.items()}
+    land_use_totals = table_numeric_totals(
+        table_paths["land_use"], ("TOTHH", "TOTPOP", "TOTEMP")
+    )
+    households = table_rows["households"]
+    persons = table_rows["persons"]
+    skim_paths = sorted(data_dir.glob("*.omx"))
+    return {
+        "households": households,
+        "persons": persons,
+        "zones": table_rows["land_use"],
+        "persons_per_household": persons / households if households else None,
+        "land_use_households": land_use_totals["TOTHH"],
+        "land_use_population": land_use_totals["TOTPOP"],
+        "land_use_employment": land_use_totals["TOTEMP"],
+        "skim_file_count": len(skim_paths),
+        "skim_bytes": sum(path.stat().st_size for path in skim_paths),
+        "tables": {
+            name: {
+                "path": str(path),
+                "format": path.suffix.removeprefix(".").lower(),
+                "rows": table_rows[name],
+                "bytes": path.stat().st_size,
+            }
+            for name, path in table_paths.items()
+        },
+        "skim_files": [str(path) for path in skim_paths],
+    }
+
+
+def table_column_counts(
+    path: Path, columns: tuple[str, ...]
+) -> dict[str, dict[str, int]]:
+    """Build small categorical distributions while reading in bounded batches."""
+
+    counts = {column: Counter() for column in columns}
+    if path.suffix.lower() == ".parquet":
+        import pyarrow.parquet as pq
+
+        parquet = pq.ParquetFile(path)
+        names = {name.casefold(): name for name in parquet.schema.names}
+        selected = [
+            names[name.casefold()] for name in columns if name.casefold() in names
+        ]
+        requested_by_actual = {
+            names[name.casefold()]: name for name in columns if name.casefold() in names
+        }
+        for batch in parquet.iter_batches(columns=selected, batch_size=131_072):
+            for index, actual in enumerate(selected):
+                requested = requested_by_actual[actual]
+                counts[requested].update(
+                    "(missing)" if value is None else str(value)
+                    for value in batch.column(index).to_pylist()
+                )
+    else:
+        with path.open(newline="", encoding="utf-8-sig") as stream:
+            reader = csv.DictReader(stream)
+            names = {name.casefold(): name for name in (reader.fieldnames or ())}
+            selected = {
+                requested: names[requested.casefold()]
+                for requested in columns
+                if requested.casefold() in names
+            }
+            for row in reader:
+                for requested, actual in selected.items():
+                    value = row.get(actual)
+                    counts[requested][value or "(missing)"] += 1
+    return {
+        column: dict(sorted(values.items(), key=lambda item: (-item[1], item[0])))
+        for column, values in counts.items()
+    }
+
+
+def summarize_model_outputs(output_dir: Path) -> dict[str, Any]:
+    """Summarize final tour and trip outputs after a measured run finishes."""
+
+    tours_path = find_table_file(output_dir, "final_tours")
+    trips_path = find_table_file(output_dir, "final_trips")
+    tours = table_row_count(tours_path)
+    trips = table_row_count(trips_path)
+    tour_counts = table_column_counts(tours_path, ("tour_category", "tour_type"))
+    trip_counts = table_column_counts(trips_path, ("trip_mode", "primary_purpose"))
+    return {
+        "tours": tours,
+        "trips": trips,
+        "trips_per_tour": trips / tours if tours else None,
+        "tour_categories": tour_counts["tour_category"],
+        "tour_types": tour_counts["tour_type"],
+        "trip_modes": trip_counts["trip_mode"],
+        "trip_primary_purposes": trip_counts["primary_purpose"],
+        "files": {
+            "final_tours": {
+                "path": str(tours_path),
+                "bytes": tours_path.stat().st_size,
+            },
+            "final_trips": {
+                "path": str(trips_path),
+                "bytes": trips_path.stat().st_size,
+            },
+        },
+    }
+
+
 def make_results_dir(repo_root: Path, requested: Path | None) -> Path:
+    stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S-%f")
     if requested is None:
-        stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         result = repo_root / "model" / "output" / "diagnostics" / stamp
     else:
-        result = requested.expanduser().resolve()
+        result = requested.expanduser()
+        if result.name == "timestamp":
+            result = result.parent / stamp
+        result = result.resolve()
 
-    if result.exists() and any(result.iterdir()):
-        raise FileExistsError(f"refusing to overwrite non-empty output directory: {result}")
+    if result.exists():
+        if not result.is_dir():
+            raise NotADirectoryError(
+                f"output path exists but is not a directory: {result}"
+            )
+        if any(result.iterdir()):
+            raise FileExistsError(
+                f"refusing to overwrite non-empty output directory: {result}"
+            )
     result.mkdir(parents=True, exist_ok=True)
     return result
 
@@ -250,6 +476,8 @@ def run_model_worker(spec_path: Path) -> int:
             "sharrow": spec["sharrow"],
         }
     )
+    if spec.get("process_count") is not None:
+        settings["num_processes"] = int(spec["process_count"])
 
     state = State.make_default(
         working_dir=model_dir,
@@ -302,6 +530,7 @@ def write_worker_spec(
     household_sample_size: int,
     sharrow: str | bool,
     multiprocess: bool,
+    process_count: int | None,
 ) -> Path:
     result_dir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -313,6 +542,7 @@ def write_worker_spec(
         "household_sample_size": household_sample_size,
         "sharrow": sharrow,
         "multiprocess": multiprocess,
+        "process_count": process_count if multiprocess else None,
     }
     spec_path.write_text(json.dumps(spec, indent=2) + "\n", encoding="utf-8")
     return spec_path
@@ -380,6 +610,7 @@ def launch_run(
     sample_interval: float,
     monitor_memory: bool,
     quiet: bool,
+    process_count: int | None,
 ) -> RunResult:
     run_dir = result_root / key
     model_output_dir = run_dir / "model-output"
@@ -391,6 +622,7 @@ def launch_run(
         household_sample_size=household_sample_size,
         sharrow=sharrow,
         multiprocess=multiprocess,
+        process_count=process_count,
     )
     log_path = run_dir / "console.log"
     command = [
@@ -411,8 +643,18 @@ def launch_run(
         env[name] = "1"
 
     if not quiet:
-        scope = "all households" if household_sample_size == 0 else f"{household_sample_size:,} households"
-        process_mode = "multiprocess" if multiprocess else "single process"
+        scope = (
+            "all households"
+            if household_sample_size == 0
+            else f"{household_sample_size:,} households"
+        )
+        process_mode = (
+            f"multiprocess ({process_count} workers)"
+            if multiprocess and process_count is not None
+            else "multiprocess"
+            if multiprocess
+            else "single process"
+        )
         print(f"Starting {label}: {process_mode}, {scope}...", flush=True)
 
     started_wall = dt.datetime.now(dt.timezone.utc)
@@ -481,8 +723,13 @@ def launch_run(
 
     if not quiet:
         status = "completed" if result.succeeded else f"failed (exit {return_code})"
-        memory = f", peak RSS {format_gib(result.peak_rss_bytes)}" if monitor_memory else ""
-        print(f"Finished {label}: {status} in {format_duration(duration)}{memory}", flush=True)
+        memory = (
+            f", peak RSS {format_gib(result.peak_rss_bytes)}" if monitor_memory else ""
+        )
+        print(
+            f"Finished {label}: {status} in {format_duration(duration)}{memory}",
+            flush=True,
+        )
     return result
 
 
@@ -515,6 +762,138 @@ def format_gib(size: int) -> str:
     return f"{size / BYTES_PER_GIB:.2f} GiB"
 
 
+def format_bytes(size: int) -> str:
+    if size >= BYTES_PER_GIB:
+        return f"{size / BYTES_PER_GIB:.2f} GiB"
+    return f"{size / 1024**2:.1f} MiB"
+
+
+def format_optional_count(value: float | int | None) -> str:
+    if value is None:
+        return "Unavailable"
+    return f"{round(value):,}"
+
+
+def input_summary_html(summary: dict[str, Any]) -> str:
+    persons_per_household = summary.get("persons_per_household")
+    ratio = f"{persons_per_household:.3f}" if persons_per_household is not None else "—"
+    table_rows = []
+    for name, details in summary["tables"].items():
+        table_rows.append(
+            "<tr>"
+            f"<td>{html.escape(name.replace('_', ' ').title())}</td>"
+            f"<td>{html.escape(details['format'].upper())}</td>"
+            f'<td class="numeric">{details["rows"]:,}</td>'
+            f'<td class="numeric">{format_bytes(details["bytes"])}</td>'
+            "</tr>"
+        )
+    return (
+        '<section class="cards input-cards">'
+        '<div class="card"><div class="name">Households</div>'
+        f'<div class="value">{summary["households"]:,}</div></div>'
+        '<div class="card"><div class="name">Persons</div>'
+        f'<div class="value">{summary["persons"]:,}</div></div>'
+        '<div class="card"><div class="name">Zones</div>'
+        f'<div class="value">{summary["zones"]:,}</div></div>'
+        '<div class="card"><div class="name">Persons / household</div>'
+        f'<div class="value">{ratio}</div></div>'
+        "</section>"
+        "<table><thead><tr><th>Population table</th><th>Format</th>"
+        '<th class="numeric">Rows</th><th class="numeric">File size</th>'
+        "</tr></thead><tbody>" + "".join(table_rows) + "</tbody></table>"
+        '<section class="cards input-cards">'
+        '<div class="card"><div class="name">Land-use households</div>'
+        f'<div class="value">{format_optional_count(summary.get("land_use_households"))}</div></div>'
+        '<div class="card"><div class="name">Land-use population</div>'
+        f'<div class="value">{format_optional_count(summary.get("land_use_population"))}</div></div>'
+        '<div class="card"><div class="name">Land-use employment</div>'
+        f'<div class="value">{format_optional_count(summary.get("land_use_employment"))}</div></div>'
+        '<div class="card"><div class="name">Skim OMX files</div>'
+        f'<div class="value">{summary["skim_file_count"]:,} · '
+        f"{format_bytes(summary['skim_bytes'])}</div></div>"
+        "</section>"
+    )
+
+
+def output_overview_table(results: list[RunResult]) -> str:
+    rows = []
+    for result in results:
+        if not result.multiprocess:
+            continue
+        summary = result.output_summary
+        if summary.get("error"):
+            values = (
+                '<td colspan="3">Summary failed: '
+                + html.escape(summary["error"])
+                + "</td>"
+            )
+        elif summary:
+            trips_per_tour = summary.get("trips_per_tour")
+            ratio = f"{trips_per_tour:.3f}" if trips_per_tour is not None else "—"
+            values = (
+                f'<td class="numeric">{summary["tours"]:,}</td>'
+                f'<td class="numeric">{summary["trips"]:,}</td>'
+                f'<td class="numeric">{ratio}</td>'
+            )
+        else:
+            values = '<td colspan="3">Unavailable because the run did not complete</td>'
+        rows.append(f"<tr><td>{html.escape(result.label)}</td>{values}</tr>")
+    return (
+        "<table><thead><tr><th>Run</th>"
+        '<th class="numeric">Tours</th><th class="numeric">Trips</th>'
+        '<th class="numeric">Trips / tour</th>'
+        "</tr></thead><tbody>" + "".join(rows) + "</tbody></table>"
+    )
+
+
+def output_distribution_table(results: list[RunResult], key: str) -> str:
+    measured = [
+        result
+        for result in results
+        if result.multiprocess
+        and result.output_summary
+        and not result.output_summary.get("error")
+        and key in result.output_summary
+    ]
+    categories = sorted(
+        {
+            category
+            for result in measured
+            for category in result.output_summary.get(key, {})
+        },
+        key=lambda category: (
+            -sum(
+                result.output_summary.get(key, {}).get(category, 0)
+                for result in measured
+            ),
+            category,
+        ),
+    )
+    if not categories:
+        return '<p class="empty">No distribution data are available.</p>'
+
+    total_key = "trips" if key.startswith("trip_") else "tours"
+    headings = "".join(
+        f'<th class="numeric">{html.escape(result.label)}</th>' for result in measured
+    )
+    rows = []
+    for category in categories:
+        cells = []
+        for result in measured:
+            count = int(result.output_summary.get(key, {}).get(category, 0))
+            total = int(result.output_summary.get(total_key, 0))
+            share = count / total if total else 0.0
+            cells.append(
+                f'<td class="numeric">{count:,} <small>({share:.1%})</small></td>'
+            )
+        rows.append(f"<tr><td>{html.escape(category)}</td>{''.join(cells)}</tr>")
+    return (
+        f"<table><thead><tr><th>Category</th>{headings}</tr></thead><tbody>"
+        + "".join(rows)
+        + "</tbody></table>"
+    )
+
+
 def svg_memory_chart(results: list[RunResult]) -> str:
     measured = [result for result in results if result.samples]
     if not measured:
@@ -528,7 +907,9 @@ def svg_memory_chart(results: list[RunResult]) -> str:
     max_y_bytes = max(int(s["rss_bytes"]) for r in measured for s in r.samples)
     max_x = max(max_x, 1.0)
     max_y_gib = max(max_y_bytes / BYTES_PER_GIB, 0.1)
-    y_axis_max = math.ceil(max_y_gib / 5.0) * 5.0 if max_y_gib > 5 else math.ceil(max_y_gib)
+    y_axis_max = (
+        math.ceil(max_y_gib / 5.0) * 5.0 if max_y_gib > 5 else math.ceil(max_y_gib)
+    )
     y_axis_max = max(y_axis_max, 1.0)
 
     def x_pos(seconds: float) -> float:
@@ -572,7 +953,7 @@ def svg_memory_chart(results: list[RunResult]) -> str:
         )
         parts.append(
             f'<text x="{x:.1f}" y="{top + plot_height + 25}" text-anchor="middle">'
-            f'{seconds / 60:.1f}</text>'
+            f"{seconds / 60:.1f}</text>"
         )
 
     for result in measured:
@@ -607,10 +988,16 @@ def runtime_table(results: list[RunResult], report_dir: Path) -> str:
     fastest = min(successful, default=0.0)
     rows: list[str] = []
     for result in measured:
-        relative = result.duration_seconds / fastest if fastest and result.succeeded else None
-        difference = result.duration_seconds - fastest if fastest and result.succeeded else None
+        relative = (
+            result.duration_seconds / fastest if fastest and result.succeeded else None
+        )
+        difference = (
+            result.duration_seconds - fastest if fastest and result.succeeded else None
+        )
         log_link = os.path.relpath(result.log_file, report_dir)
-        relative_cell = f"<td>{relative:.3f}×</td>" if relative is not None else "<td>—</td>"
+        relative_cell = (
+            f"<td>{relative:.3f}×</td>" if relative is not None else "<td>—</td>"
+        )
         difference_cell = (
             f"<td>{difference:+.1f} s</td>" if difference is not None else "<td>—</td>"
         )
@@ -639,9 +1026,7 @@ def runtime_table(results: list[RunResult], report_dir: Path) -> str:
         "<th>Run</th><th>Sharrow</th><th>Status</th><th>Runtime</th>"
         "<th>Relative runtime</th><th>Difference</th><th>Peak tree RSS</th>"
         "<th>Peak tree USS</th><th>Log</th>"
-        "</tr></thead><tbody>"
-        + "".join(rows)
-        + "</tbody></table>"
+        "</tr></thead><tbody>" + "".join(rows) + "</tbody></table>"
     )
 
 
@@ -654,6 +1039,7 @@ def write_html_report(
     sample_interval: float,
     activitysim_version: str,
     process_count: int | None,
+    input_summary: dict[str, Any],
 ) -> None:
     warmup = next((result for result in results if result.key == "cache-warmup"), None)
     scope = "Repository subarea data" if using_subarea else "Full-scale data"
@@ -690,6 +1076,7 @@ body {{ margin:0; padding:32px; }}
 main {{ max-width:1180px; margin:auto; }}
 h1 {{ margin:0 0 8px; font-size:30px; }}
 h2 {{ margin-top:34px; font-size:20px; }}
+h3 {{ margin-top:24px; font-size:16px; }}
 .subtitle, .note {{ color:#536174; line-height:1.55; }}
 .cards {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px; margin:24px 0; }}
 .card, .chart {{ background:white; border:1px solid #dce3eb; border-radius:12px; padding:18px; box-shadow:0 2px 8px #1520330a; }}
@@ -700,6 +1087,8 @@ table {{ width:100%; border-collapse:collapse; background:white; border:1px soli
 th, td {{ padding:11px 13px; border-bottom:1px solid #e5eaf0; text-align:right; white-space:nowrap; }}
 th {{ background:#f8fafc; color:#475569; font-size:12px; text-transform:uppercase; letter-spacing:.04em; }}
 th:first-child, td:first-child, th:nth-child(2), td:nth-child(2), th:nth-child(3), td:nth-child(3) {{ text-align:left; }}
+th.numeric, td.numeric {{ text-align:right !important; }}
+small {{ color:#64748b; }}
 a {{ color:#1d4ed8; }}
 .chart svg {{ width:100%; height:auto; }}
 .chart text {{ fill:#667085; font-size:12px; }} .chart .axis-title {{ font-size:13px; font-weight:600; }}
@@ -719,20 +1108,36 @@ code {{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.92em
   <div class="card"><div class="name">Multiprocess workers</div><div class="value">{html.escape(process_text)}</div></div>
   <div class="card"><div class="name">Cache warm-up</div><div class="value">{html.escape(warmup_text)}</div></div>
 </section>
+<h2>Input data</h2>
+<p class="note">Counts describe the files supplied to both measured runs. Land-use totals come from <code>TOTHH</code>, <code>TOTPOP</code>, and <code>TOTEMP</code>; zones are rows in the land-use table.</p>
+{input_summary_html(input_summary)}
 <h2>Runtime comparison</h2>
 {runtime_table(results, report_path.parent)}
 <h2>Progressive memory usage</h2>
 <div class="chart"><div class="legend">{legend}</div>{svg_memory_chart(results)}</div>
+<h2>Model output summary</h2>
+<p class="note">Output files are scanned only after both timed runs finish, so these summaries are not included in the runtime measurements.</p>
+{output_overview_table(results)}
+<h3>Trips by mode</h3>
+{output_distribution_table(results, "trip_modes")}
+<h3>Trips by primary purpose</h3>
+{output_distribution_table(results, "trip_primary_purposes")}
+<h3>Tours by category</h3>
+{output_distribution_table(results, "tour_categories")}
+<h3>Tours by type</h3>
+{output_distribution_table(results, "tour_types")}
 <p class="note"><strong>Memory interpretation.</strong> Tree RSS is the sum of resident memory reported for the controller and all workers and can count shared skim pages more than once. Where the operating system permits external access, tree USS is also shown as the sum of private memory and excludes shared pages. macOS commonly restricts child-process USS, in which case the report marks it unavailable instead of substituting an internal profiler. Samples were taken externally every {sample_interval:g} seconds.</p>
-<p class="note"><strong>Benchmark controls.</strong> Both measured runs use all households (<code>households_sample_size: 0</code>) and the repository's native multiprocessing configuration. ActivitySim instrumentation, memory profiling, expression profiling, trace output, variability checking, loser logging, and <code>track_skim_usage</code> are disabled.</p>
+<p class="note"><strong>Benchmark controls.</strong> Both measured runs use all households (<code>households_sample_size: 0</code>) and {html.escape(process_text)} ActivitySim worker processes. ActivitySim instrumentation, memory profiling, expression profiling, trace output, variability checking, loser logging, and <code>track_skim_usage</code> are disabled.</p>
 <p class="note"><strong>Data directory.</strong> <code>{html.escape(str(data_dir))}</code></p>
-<p class="note"><strong>Host.</strong> {html.escape(platform.platform())}; {os.cpu_count() or 'unknown'} logical CPUs.</p>
+<p class="note"><strong>Host.</strong> {html.escape(platform.platform())}; {os.cpu_count() or "unknown"} logical CPUs.</p>
 </main></body></html>
 """
     report_path.write_text(report, encoding="utf-8")
 
 
-def write_json_summary(path: Path, results: list[RunResult], metadata: dict[str, Any]) -> None:
+def write_json_summary(
+    path: Path, results: list[RunResult], metadata: dict[str, Any]
+) -> None:
     payload = {
         "metadata": metadata,
         "runs": [asdict(result) for result in results],
@@ -747,7 +1152,11 @@ def read_mp_process_count(model_dir: Path) -> int | None:
         settings = yaml.safe_load(
             (model_dir / "configs_mp" / "settings.yaml").read_text(encoding="utf-8")
         )
-        return int(settings.get("num_processes")) if settings.get("num_processes") else None
+        return (
+            int(settings.get("num_processes"))
+            if settings.get("num_processes")
+            else None
+        )
     except (OSError, TypeError, ValueError):
         return None
 
@@ -780,6 +1189,11 @@ def run_benchmarks(args: argparse.Namespace, repo_root: Path) -> int:
 
     result_root = make_results_dir(repo_root, args.output_dir)
     model_dir = repo_root / "model"
+    process_count = args.processes or read_mp_process_count(model_dir)
+
+    if not args.quiet:
+        print("Summarizing input data...", flush=True)
+    input_summary = summarize_input_data(data_dir)
     definitions = [
         {
             "key": "cache-warmup",
@@ -810,6 +1224,13 @@ def run_benchmarks(args: argparse.Namespace, repo_root: Path) -> int:
     if not args.quiet:
         print(f"Data directory: {data_dir}", flush=True)
         print(f"Diagnostic outputs: {result_root}", flush=True)
+        print(
+            f"Inputs: {input_summary['households']:,} households, "
+            f"{input_summary['persons']:,} persons, {input_summary['zones']:,} zones",
+            flush=True,
+        )
+        if process_count is not None:
+            print(f"Multiprocess workers: {process_count}", flush=True)
 
     results: list[RunResult] = []
     for definition in definitions:
@@ -820,6 +1241,7 @@ def run_benchmarks(args: argparse.Namespace, repo_root: Path) -> int:
             result_root=result_root,
             sample_interval=args.sample_interval,
             quiet=args.quiet,
+            process_count=process_count,
         )
         results.append(result)
         if not result.succeeded:
@@ -830,8 +1252,20 @@ def run_benchmarks(args: argparse.Namespace, repo_root: Path) -> int:
             )
             break
 
+    if not args.quiet:
+        print("Summarizing model outputs...", flush=True)
+    for result in results:
+        if not result.multiprocess or not result.succeeded:
+            continue
+        try:
+            result.output_summary = summarize_model_outputs(Path(result.output_dir))
+        except Exception as error:  # noqa: BLE001 - preserve the benchmark report
+            result.output_summary = {"error": str(error)}
+            warnings.warn(
+                f"could not summarize outputs for {result.label}: {error}", stacklevel=2
+            )
+
     version = activitysim_version()
-    process_count = read_mp_process_count(model_dir)
     metadata = {
         "generated_at": dt.datetime.now().astimezone().isoformat(),
         "data_dir": str(data_dir),
@@ -839,6 +1273,7 @@ def run_benchmarks(args: argparse.Namespace, repo_root: Path) -> int:
         "sample_interval_seconds": args.sample_interval,
         "activitysim_version": version,
         "multiprocess_workers": process_count,
+        "input_summary": input_summary,
         "platform": platform.platform(),
         "logical_cpus": os.cpu_count(),
     }
@@ -852,6 +1287,7 @@ def run_benchmarks(args: argparse.Namespace, repo_root: Path) -> int:
         sample_interval=args.sample_interval,
         activitysim_version=version,
         process_count=process_count,
+        input_summary=input_summary,
     )
 
     if not args.quiet:
@@ -860,7 +1296,11 @@ def run_benchmarks(args: argparse.Namespace, repo_root: Path) -> int:
             if not webbrowser.open(report_path.resolve().as_uri()):
                 warnings.warn(f"could not open the browser; report is at {report_path}")
 
-    return 0 if len(results) == len(definitions) and all(r.succeeded for r in results) else 1
+    return (
+        0
+        if len(results) == len(definitions) and all(r.succeeded for r in results)
+        else 1
+    )
 
 
 def main() -> int:
