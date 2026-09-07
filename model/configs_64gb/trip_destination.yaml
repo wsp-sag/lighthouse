@@ -1,0 +1,37 @@
+---
+# Keep the base model's formulas, but use ten sampled alternatives and
+# divide full-production evaluator arrays into forty chunks. This only affects
+# the 64 GiB profile; the base config retains 30 alternatives and ten chunks.
+SAMPLE_SPEC: trip_destination_sample.csv
+SPEC: trip_destination.csv
+COEFFICIENTS: trip_destination_coefficients.csv
+SAMPLE_SIZE: 10
+DESTINATION_SAMPLE_SPEC: trip_destination_sample.csv
+DESTINATION_SPEC: trip_destination.csv
+LOGSUM_SETTINGS: trip_mode_choice.yaml
+
+DEST_CHOICE_LOGSUM_COLUMN_NAME: destination_logsum
+DEST_CHOICE_SAMPLE_TABLE_NAME: trip_destination_sample
+
+TRIP_ORIGIN: origin
+ALT_DEST_COL_NAME: dest_taz
+PRIMARY_DEST: tour_leg_dest
+# These fields either already exist on trips or are not referenced by the
+# trip-mode logsum spec. Avoid repeating them for every sampled alternative.
+REDUNDANT_TOURS_MERGED_CHOOSER_COLUMNS:
+  - tour_mode
+  - person_id
+  - household_id
+  - tour_category
+CONSTANTS:
+  max_walk_distance: 3
+  max_bike_distance: 8
+preprocessor:
+  SPEC: trip_destination_annotate_trips_preprocessor
+  DF: trips
+  TABLES:
+    - tours
+    - persons
+CLEANUP: false
+
+explicit_chunk: 0.025

@@ -1,0 +1,25 @@
+Description,Target,Expression
+# Retain only columns referenced by tour_mode_choice.csv,,
+local,_DF_IS_TOUR,'tour_type' in df.columns
+local,_HAVE_PARENT_TOURS,'parent_tour_id' in df.columns
+,_parent_tour_mode,"reindex(tours.tour_mode, df.parent_tour_id) if _HAVE_PARENT_TOURS else ''"
+,work_tour_is_bike,_parent_tour_mode=='BIKE'
+,work_tour_is_SOV,"_parent_tour_mode.isin(['DRIVEALONEFREE','DRIVEALONEPAY'])"
+,is_indiv,"~(df.tour_category=='joint') if 'tour_category' in df.columns else True"
+,is_atwork_subtour,"(df.tour_category=='atwork') if 'tour_category' in df.columns else False"
+,is_escort,(df.tour_type == 'escort') if _DF_IS_TOUR else False
+,ivot,1.0 / df.value_of_time
+,dest_topology,"reindex(land_use.TOPOLOGY, df[dest_col_name])"
+,terminal_time,"reindex(land_use.TERMINAL, df[dest_col_name])"
+,dest_density_index,"reindex(land_use.density_index, df[dest_col_name])"
+,walk_transit_available,"(reindex(land_use.access_dist_transit, df[orig_col_name]) > 0) & (reindex(land_use.access_dist_transit, df[dest_col_name]) > 0) & (odt_skims['tw_ivtt']/TRANSIT_SCALE_FACTOR > 0) & (dot_skims['tw_ivtt']/TRANSIT_SCALE_FACTOR > 0) if 'access_dist_transit' in land_use else (odt_skims['tw_ivtt']/TRANSIT_SCALE_FACTOR > 0) & (dot_skims['tw_ivtt']/TRANSIT_SCALE_FACTOR > 0)"
+,drive_transit_available,"(reindex(land_use.access_dist_transit, df[dest_col_name]) > 0) & (df.auto_ownership > 0) & (odt_skims['ta_ivtt']/TRANSIT_SCALE_FACTOR > 0) & (dot_skims['ta_ivtt']/TRANSIT_SCALE_FACTOR > 0) if 'access_dist_transit' in land_use else (df.auto_ownership > 0) & (odt_skims['ta_ivtt']/TRANSIT_SCALE_FACTOR > 0) & (dot_skims['ta_ivtt']/TRANSIT_SCALE_FACTOR > 0)"
+,_origSingleTNCWaitTime,"rng.lognormal_for_df(df, mu=pd.cut((reindex(land_use.TOTPOP, df[orig_col_name]) + reindex(land_use.TOTEMP, df[orig_col_name])) / (reindex(land_use.TOTACRE, df[orig_col_name]) / 640), bins=[-np.inf, 500, 2000, 5000, 15000, np.inf], labels=[5, 4, 3, 2, 1]).astype(int).map({k: v for k, v in TNC_single_waitTime_mean.items()}), sigma=pd.cut((reindex(land_use.TOTPOP, df[orig_col_name]) + reindex(land_use.TOTEMP, df[orig_col_name])) / (reindex(land_use.TOTACRE, df[orig_col_name]) / 640), bins=[-np.inf, 500, 2000, 5000, 15000, np.inf], labels=[5, 4, 3, 2, 1]).astype(int).map({k: v for k, v in TNC_single_waitTime_sd.items()}), broadcast=True, scale=True).clip(min_waitTime, max_waitTime)"
+,_destSingleTNCWaitTime,"rng.lognormal_for_df(df, mu=pd.cut((reindex(land_use.TOTPOP, df[dest_col_name]) + reindex(land_use.TOTEMP, df[dest_col_name])) / (reindex(land_use.TOTACRE, df[dest_col_name]) / 640), bins=[-np.inf, 500, 2000, 5000, 15000, np.inf], labels=[5, 4, 3, 2, 1]).astype(int).map({k: v for k, v in TNC_single_waitTime_mean.items()}), sigma=pd.cut((reindex(land_use.TOTPOP, df[dest_col_name]) + reindex(land_use.TOTEMP, df[dest_col_name])) / (reindex(land_use.TOTACRE, df[dest_col_name]) / 640), bins=[-np.inf, 500, 2000, 5000, 15000, np.inf], labels=[5, 4, 3, 2, 1]).astype(int).map({k: v for k, v in TNC_single_waitTime_sd.items()}), broadcast=True, scale=True).clip(min_waitTime, max_waitTime)"
+,totalWaitRideHail,_origSingleTNCWaitTime + _destSingleTNCWaitTime
+,daily_parking_cost,"np.where((df.tour_category == 'mandatory') if 'tour_category' in df.columns else False, np.where(((df.tour_type == 'work') & df.free_parking_at_work) if _DF_IS_TOUR else False, 0, reindex(land_use.PRKCST, df[dest_col_name])), np.where(((df.tour_type == 'work') & df.free_parking_at_work) if _DF_IS_TOUR else False, 0, reindex(land_use.OPRKCST, df[dest_col_name]))) * df.duration"
+,distance,od_skims['DIST']
+,sov_available,(odt_skims['da_time']>0) & (dot_skims['da_time']>0)
+,hov2_available,(odt_skims['sr_time']>0) & (dot_skims['sr_time']>0)
+,hov3_available,(odt_skims['sr_time']>0) & (dot_skims['sr_time']>0)
+,destination_in_cbd,"(reindex(land_use.area_type, df[dest_col_name]) < setting('cbd_threshold')) * 1"
