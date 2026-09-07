@@ -40,7 +40,8 @@ GIB = 1024**3
 TIMESTAMP_FORMAT = "%Y%m%d-%H%M%S-%f"
 TIMESTAMP_PATTERN = re.compile(r"^\d{8}-\d{6}-\d{6}$")
 COMPONENT_COMPLETION_PATTERN = re.compile(
-    r"^\[(?P<minutes>\d+):(?P<seconds>\d+(?:\.\d+)?)\].*?INFO:\s+"
+    r"^\[(?:(?P<hours>\d+):)?(?P<minutes>\d+):"
+    r"(?P<seconds>\d+(?:\.\d+)?)\].*?INFO:\s+"
     r"(?P<process>mp_[A-Za-z0-9_]+)\s+"
     r"(?P<component>[A-Za-z][A-Za-z0-9_]*)\s*:\s*"
     r"(?P<duration>\d+(?:\.\d+)?)\s+seconds"
@@ -359,8 +360,35 @@ def require_docker() -> dict[str, Any]:
 
 
 def locked_image_name(root: Path) -> str:
-    digest = hashlib.sha256((root / "uv.lock").read_bytes()).hexdigest()[:12]
-    return f"lighthouse-production-benchmark:{digest}"
+    digest = hashlib.sha256()
+    repositories = {
+        root: (
+            root / "uv.lock",
+            root / "pyproject.toml",
+            root / "scripts" / "production-benchmark.Dockerfile",
+            root / "src",
+        ),
+        root.parent / "activitysim": (
+            root.parent / "activitysim" / "pyproject.toml",
+            root.parent / "activitysim" / "activitysim",
+        ),
+        root.parent / "sharrow": (
+            root.parent / "sharrow" / "pyproject.toml",
+            root.parent / "sharrow" / "sharrow",
+        ),
+    }
+    for repository_root, sources in repositories.items():
+        for source in sources:
+            paths = [source] if source.is_file() else sorted(source.rglob("*"))
+            for path in paths:
+                if not path.is_file() or "__pycache__" in path.parts:
+                    continue
+                digest.update(path.relative_to(repository_root).as_posix().encode())
+                digest.update(b"\0")
+                digest.update(path.read_bytes())
+                digest.update(b"\0")
+    fingerprint = digest.hexdigest()[:12]
+    return f"lighthouse-production-benchmark:{fingerprint}"
 
 
 def config_fingerprint(root: Path) -> str:
@@ -378,9 +406,24 @@ def config_fingerprint(root: Path) -> str:
 
 
 def build_image(root: Path, image_name: str, quiet: bool) -> None:
+    activitysim_root = root.parent / "activitysim"
+    sharrow_root = root.parent / "sharrow"
+    for package_name, package_root in (
+        ("ActivitySim", activitysim_root),
+        ("Sharrow", sharrow_root),
+    ):
+        if not (package_root / "pyproject.toml").is_file():
+            raise RuntimeError(
+                f"{package_name} checkout not found at expected path: {package_root}"
+            )
+
     command = [
         "docker",
         "build",
+        "--build-context",
+        f"activitysim={activitysim_root}",
+        "--build-context",
+        f"sharrow={sharrow_root}",
         "--file",
         str(root / "scripts" / "production-benchmark.Dockerfile"),
         "--tag",
@@ -880,20 +923,37 @@ def read_host_samples(path: Path) -> list[dict[str, Any]]:
     return result
 
 
-def component_timings(output_dir: Path) -> dict[str, dict[str, float | int]]:
+def component_timings(
+    output_dir: Path, console_log: Path | None = None
+) -> dict[str, dict[str, float | int]]:
     path = output_dir / "timing_log.csv"
     grouped: dict[str, list[float]] = {}
-    if not path.is_file():
-        return {}
-    with path.open(newline="", encoding="utf-8") as stream:
-        for row in csv.DictReader(stream):
-            component = row.get("model_name")
-            try:
-                seconds = float(row["seconds"])
-            except (KeyError, TypeError, ValueError):
-                continue
-            if component:
-                grouped.setdefault(component, []).append(seconds)
+    if path.is_file():
+        with path.open(newline="", encoding="utf-8") as stream:
+            for row in csv.DictReader(stream):
+                component = row.get("model_name")
+                try:
+                    seconds = float(row["seconds"])
+                except (KeyError, TypeError, ValueError):
+                    continue
+                if component:
+                    grouped.setdefault(component, []).append(seconds)
+
+    # Normal ActivitySim timing logs intentionally contain only the locutor's
+    # component time unless its built-in benchmarking diagnostics are enabled.
+    # The console completion records already contain one duration per worker,
+    # so prefer those externally observed values when they are available.
+    worker_grouped: dict[str, list[float]] = {}
+    if console_log is not None and console_log.is_file():
+        with console_log.open(encoding="utf-8", errors="replace") as stream:
+            for line in stream:
+                match = COMPONENT_COMPLETION_PATTERN.search(line)
+                if match is not None:
+                    worker_grouped.setdefault(match["component"], []).append(
+                        float(match["duration"])
+                    )
+    grouped.update(worker_grouped)
+
     return {
         component: {
             "observations": len(values),
@@ -916,7 +976,11 @@ def component_intervals(console_log: Path) -> dict[str, list[tuple[float, float]
             match = COMPONENT_COMPLETION_PATTERN.search(line)
             if match is None:
                 continue
-            end = float(match["minutes"]) * 60 + float(match["seconds"])
+            end = (
+                float(match["hours"] or 0) * 3600
+                + float(match["minutes"]) * 60
+                + float(match["seconds"])
+            )
             duration = float(match["duration"])
             intervals.setdefault(match["component"], []).append(
                 (max(0.0, end - duration), end)
@@ -1234,7 +1298,7 @@ def launch_container_run(
         console_log=str(console_path),
         cgroup_samples=str(run_dir / "cgroup-samples.csv"),
         host_samples=str(host_path),
-        component_timings=component_timings(output_dir),
+        component_timings=component_timings(output_dir, console_path),
         component_memory=component_memory_summary(cgroup_samples, console_path),
         output_summary=read_json(run_dir / "output-summary.json"),
     )

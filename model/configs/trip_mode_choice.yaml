@@ -149,3 +149,7 @@ TOURS_MERGED_CHOOSER_COLUMNS:
   - person_id
   - household_id
 MODE_CHOICE_LOGSUM_COLUMN_NAME: mode_choice_logsum
+
+# Global chooser-row budget for the inner utility calculation. ActivitySim
+# divides absolute explicit chunks among active workers.
+explicit_chunk: 100_000
