@@ -4,10 +4,10 @@
 The script first synchronizes the locked uv environment, then runs:
 
 1. A 5,000-household, single-process Sharrow cache warm-up.
-2. A full-population, multiprocess run with Sharrow required.
-3. A full-population, multiprocess run without Sharrow.
+2. A full-population (or optionally sampled), multiprocess run with Sharrow required.
+3. The same population, multiprocess run without Sharrow.
 
-The two full runs are monitored by this parent process.  Results are written to
+The two measured runs are monitored by this parent process.  Results are written to
 a self-contained HTML report and CSV/JSON data files under ``model/output``.
 
 Sharrow requires zero-based pipeline zone identifiers and realigns OMX matrices
@@ -45,9 +45,16 @@ from typing import Any
 ENV_READY = "LIGHTHOUSE_DIAGNOSTIC_UV_READY"
 BYTES_PER_GIB = 1024**3
 DEFAULT_SAMPLE_INTERVAL = 1.0
+TIMESTAMP_FORMAT = "%Y%m%d-%H%M%S-%f"
+TIMESTAMP_DIR_PATTERN = re.compile(r"^\d{8}-\d{6}-\d{6}$")
 COMPONENT_TIMING_PATTERN = re.compile(
     r"^(?P<timestamp>\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}).*?"
     r"time to execute run\.(?P<component>.+?) : "
+    r"(?P<seconds>\d+(?:\.\d+)?) seconds",
+    re.IGNORECASE,
+)
+RUN_COMPLETED_PATTERN = re.compile(
+    r"Time to execute all models completed\s*:\s*"
     r"(?P<seconds>\d+(?:\.\d+)?) seconds",
     re.IGNORECASE,
 )
@@ -67,6 +74,7 @@ class RunResult:
     started_at: str
     duration_seconds: float
     return_code: int
+    reused: bool = False
     samples: list[dict[str, float | int]] = field(default_factory=list)
     output_summary: dict[str, Any] = field(default_factory=dict)
     component_timings: dict[str, dict[str, Any]] = field(default_factory=dict)
@@ -102,12 +110,21 @@ def parse_args() -> argparse.Namespace:
         epilog="""examples:
   %(prog)s --data-dir /path/to/full/data
   %(prog)s --data-dir /path/to/full/data --processes 16
+  %(prog)s --sample-households 25000
   %(prog)s --output-dir results/timestamp
+  %(prog)s --resume --output-dir results/timestamp
   %(prog)s --quiet
 
 An output path whose final component is literally "timestamp" is replaced by
 a timestamped directory name. For example, results/timestamp becomes
 results/20260904-153000-123456.
+
+With --resume, a timestamp output selects the newest timestamped directory and
+reuses its compatible completed jobs. A designated non-timestamp directory is
+resumed directly. Incomplete job directories are preserved with an
+"-incomplete-<timestamp>" suffix before they are restarted. If omitted, the
+data directory, worker count, and main-run household sample size are recovered
+from existing job specifications.
 """,
     )
     parser.add_argument(
@@ -130,11 +147,28 @@ results/20260904-153000-123456.
         ),
     )
     parser.add_argument(
+        "--resume",
+        action="store_true",
+        help=(
+            "reuse compatible completed jobs and run only missing or incomplete "
+            "jobs; for timestamp output, resume the most recent timestamped directory"
+        ),
+    )
+    parser.add_argument(
+        "--sample-households",
+        type=positive_int,
+        metavar="N",
+        help=(
+            "sample N households for each main Sharrow and non-Sharrow run; "
+            "defaults to the complete population"
+        ),
+    )
+    parser.add_argument(
         "--processes",
         type=positive_int,
         metavar="N",
         help=(
-            "number of ActivitySim worker processes for each full multiprocess run; "
+            "number of ActivitySim worker processes for each main multiprocess run; "
             "defaults to num_processes in model/configs_mp/settings.yaml"
         ),
     )
@@ -439,27 +473,94 @@ def summarize_component_timings(output_dir: Path) -> dict[str, dict[str, Any]]:
     }
 
 
-def make_results_dir(repo_root: Path, requested: Path | None) -> Path:
-    stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+def timestamp_now() -> str:
+    return dt.datetime.now().strftime(TIMESTAMP_FORMAT)
+
+
+def latest_timestamped_dir(parent: Path) -> Path | None:
+    """Return the newest benchmark timestamp directory under *parent*."""
+
+    if not parent.is_dir():
+        return None
+    candidates = [
+        path
+        for path in parent.iterdir()
+        if path.is_dir() and TIMESTAMP_DIR_PATTERN.fullmatch(path.name)
+    ]
+    return max(candidates, key=lambda path: path.name, default=None)
+
+
+def make_results_dir(
+    repo_root: Path, requested: Path | None, *, resume: bool = False
+) -> Path:
+    """Create a result directory or select the appropriate directory to resume."""
+
+    stamp = timestamp_now()
+    timestamped_output = requested is None or requested.name == "timestamp"
     if requested is None:
-        result = repo_root / "model" / "output" / "diagnostics" / stamp
+        timestamp_parent = repo_root / "model" / "output" / "diagnostics"
+        result = timestamp_parent / stamp
+    elif timestamped_output:
+        timestamp_parent = requested.expanduser().parent.resolve()
+        result = timestamp_parent / stamp
     else:
-        result = requested.expanduser()
-        if result.name == "timestamp":
-            result = result.parent / stamp
-        result = result.resolve()
+        timestamp_parent = None
+        result = requested.expanduser().resolve()
+
+    if resume and timestamp_parent is not None:
+        result = latest_timestamped_dir(timestamp_parent) or result
 
     if result.exists():
         if not result.is_dir():
             raise NotADirectoryError(
                 f"output path exists but is not a directory: {result}"
             )
-        if any(result.iterdir()):
+        if not resume and any(result.iterdir()):
             raise FileExistsError(
                 f"refusing to overwrite non-empty output directory: {result}"
             )
     result.mkdir(parents=True, exist_ok=True)
     return result
+
+
+def existing_worker_specs(result_root: Path) -> list[dict[str, Any]]:
+    """Read usable worker specifications from an existing benchmark directory."""
+
+    specs = []
+    for key in ("cache-warmup", "full-sharrow", "full-no-sharrow"):
+        path = result_root / key / "run-spec.json"
+        if not path.is_file():
+            continue
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if isinstance(value, dict):
+            specs.append(value)
+    return specs
+
+
+def resumed_data_dir(result_root: Path) -> Path | None:
+    for spec in existing_worker_specs(result_root):
+        if spec.get("data_dir"):
+            return Path(spec["data_dir"]).expanduser().resolve()
+    return None
+
+
+def resumed_process_count(result_root: Path) -> int | None:
+    for spec in existing_worker_specs(result_root):
+        if spec.get("process_count") is not None:
+            return int(spec["process_count"])
+    return None
+
+
+def resumed_household_sample_size(result_root: Path) -> int | None:
+    """Recover the main-run household sample size from prior specifications."""
+
+    for spec in existing_worker_specs(result_root):
+        if spec.get("multiprocess") and spec.get("household_sample_size") is not None:
+            return int(spec["household_sample_size"])
+    return None
 
 
 def diagnostic_settings() -> dict[str, Any]:
@@ -586,6 +687,28 @@ def run_model_worker(spec_path: Path) -> int:
     return 0
 
 
+def worker_spec_data(
+    *,
+    model_dir: Path,
+    data_dir: Path,
+    output_dir: Path,
+    household_sample_size: int,
+    sharrow: str | bool,
+    multiprocess: bool,
+    process_count: int | None,
+) -> dict[str, Any]:
+    return {
+        "model_dir": str(model_dir),
+        "data_dir": str(data_dir),
+        "output_dir": str(output_dir),
+        "household_sample_size": household_sample_size,
+        "sharrow": sharrow,
+        "multiprocess": multiprocess,
+        "process_count": process_count if multiprocess else None,
+        "recode_pipeline_columns": bool(sharrow),
+    }
+
+
 def write_worker_spec(
     result_dir: Path,
     *,
@@ -600,18 +723,183 @@ def write_worker_spec(
     result_dir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
     spec_path = result_dir / "run-spec.json"
-    spec = {
-        "model_dir": str(model_dir),
-        "data_dir": str(data_dir),
-        "output_dir": str(output_dir),
-        "household_sample_size": household_sample_size,
-        "sharrow": sharrow,
-        "multiprocess": multiprocess,
-        "process_count": process_count if multiprocess else None,
-        "recode_pipeline_columns": bool(sharrow),
-    }
+    spec = worker_spec_data(
+        model_dir=model_dir,
+        data_dir=data_dir,
+        output_dir=output_dir,
+        household_sample_size=household_sample_size,
+        sharrow=sharrow,
+        multiprocess=multiprocess,
+        process_count=process_count,
+    )
     spec_path.write_text(json.dumps(spec, indent=2) + "\n", encoding="utf-8")
     return spec_path
+
+
+def compatible_worker_spec(path: Path, expected: dict[str, Any]) -> bool:
+    if not path.is_file():
+        return False
+    try:
+        actual = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    return all(actual.get(key) == value for key, value in expected.items())
+
+
+def completed_model_duration(log_path: Path) -> float | None:
+    """Read ActivitySim's final completion duration, if present."""
+
+    if not log_path.is_file():
+        return None
+    duration = None
+    with log_path.open(encoding="utf-8", errors="replace") as stream:
+        for line in stream:
+            match = RUN_COMPLETED_PATTERN.search(line)
+            if match is not None:
+                duration = float(match.group("seconds"))
+    return duration
+
+
+def model_outputs_complete(output_dir: Path) -> bool:
+    """Check for the core final tables produced only by a complete model run."""
+
+    try:
+        for table in (
+            "final_households",
+            "final_persons",
+            "final_tours",
+            "final_trips",
+        ):
+            if find_table_file(output_dir, table).stat().st_size <= 0:
+                return False
+    except (FileNotFoundError, OSError):
+        return False
+    return True
+
+
+def read_samples_csv(path: Path) -> list[dict[str, float | int]]:
+    if not path.is_file():
+        return []
+    samples: list[dict[str, float | int]] = []
+    try:
+        with path.open(newline="", encoding="utf-8") as stream:
+            for row in csv.DictReader(stream):
+                try:
+                    samples.append(
+                        {
+                            "elapsed_seconds": float(row["elapsed_seconds"]),
+                            "rss_bytes": int(row["rss_bytes"]),
+                            "uss_bytes": int(row["uss_bytes"]),
+                            "process_count": int(row["process_count"]),
+                            "uss_process_count": int(row["uss_process_count"]),
+                        }
+                    )
+                except (KeyError, TypeError, ValueError):
+                    continue
+    except OSError:
+        return []
+    return samples
+
+
+def write_run_result(path: Path, result: RunResult) -> None:
+    """Atomically persist one job result so a later invocation can reuse it."""
+
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(asdict(result), indent=2) + "\n", encoding="utf-8")
+    temporary.replace(path)
+
+
+def load_completed_result(
+    *,
+    definition: dict[str, Any],
+    model_dir: Path,
+    data_dir: Path,
+    result_root: Path,
+    process_count: int | None,
+    sample_interval: float,
+) -> RunResult | None:
+    """Load a compatible completed job, including pre-resume-script outputs."""
+
+    run_dir = result_root / definition["key"]
+    output_dir = run_dir / "model-output"
+    log_path = run_dir / "console.log"
+    expected = worker_spec_data(
+        model_dir=model_dir,
+        data_dir=data_dir,
+        output_dir=output_dir,
+        household_sample_size=definition["household_sample_size"],
+        sharrow=definition["sharrow"],
+        multiprocess=definition["multiprocess"],
+        process_count=process_count,
+    )
+    if not compatible_worker_spec(run_dir / "run-spec.json", expected):
+        return None
+    if not model_outputs_complete(output_dir):
+        return None
+
+    saved_path = run_dir / "run-result.json"
+    saved: dict[str, Any] = {}
+    if saved_path.is_file():
+        try:
+            loaded = json.loads(saved_path.read_text(encoding="utf-8"))
+            if isinstance(loaded, dict):
+                saved = loaded
+        except (OSError, json.JSONDecodeError):
+            saved = {}
+    if saved and int(saved.get("return_code", 1)) != 0:
+        return None
+
+    samples = saved.get("samples") or read_samples_csv(run_dir / "memory-samples.csv")
+    duration = saved.get("duration_seconds")
+    if duration is None:
+        duration = completed_model_duration(log_path)
+        if duration is None:
+            return None
+        if samples:
+            duration = max(
+                float(duration),
+                max(float(sample["elapsed_seconds"]) for sample in samples)
+                + sample_interval,
+            )
+
+    started_at = saved.get("started_at")
+    if not started_at:
+        finished_at = dt.datetime.fromtimestamp(
+            log_path.stat().st_mtime, tz=dt.timezone.utc
+        )
+        started_at = (finished_at - dt.timedelta(seconds=float(duration))).isoformat()
+
+    return RunResult(
+        key=definition["key"],
+        label=definition["label"],
+        sharrow=definition["sharrow"],
+        multiprocess=definition["multiprocess"],
+        household_sample_size=definition["household_sample_size"],
+        output_dir=str(output_dir),
+        log_file=str(log_path),
+        started_at=str(started_at),
+        duration_seconds=float(duration),
+        return_code=0,
+        reused=True,
+        samples=samples,
+        output_summary=saved.get("output_summary", {}),
+        component_timings=saved.get("component_timings", {}),
+    )
+
+
+def preserve_incomplete_run(run_dir: Path) -> Path | None:
+    """Move a stale job aside before restarting it, preserving crash evidence."""
+
+    if not run_dir.exists():
+        return None
+    suffix = timestamp_now()
+    preserved = run_dir.with_name(f"{run_dir.name}-incomplete-{suffix}")
+    counter = 1
+    while preserved.exists():
+        preserved = run_dir.with_name(f"{run_dir.name}-incomplete-{suffix}-{counter}")
+        counter += 1
+    run_dir.rename(preserved)
+    return preserved
 
 
 def process_tree_memory(pid: int) -> dict[str, int]:
@@ -786,6 +1074,7 @@ def launch_run(
 
     if monitor_memory:
         write_samples_csv(run_dir / "memory-samples.csv", result.samples)
+    write_run_result(run_dir / "run-result.json", result)
 
     if not quiet:
         status = "completed" if result.succeeded else f"failed (exit {return_code})"
@@ -1072,11 +1361,15 @@ def runtime_table(results: list[RunResult], report_dir: Path) -> str:
             if result.uss_available
             else "<td>Unavailable</td>"
         )
+        if result.succeeded:
+            status = "Reused (completed)" if result.reused else "Completed"
+        else:
+            status = f"Failed ({result.return_code})"
         row = (
             "<tr>"
             f"<td>{html.escape(result.label)}</td>"
             f"<td>{'require' if result.sharrow else 'False'}</td>"
-            f"<td>{'Completed' if result.succeeded else f'Failed ({result.return_code})'}</td>"
+            f"<td>{status}</td>"
             f"<td>{format_duration(result.duration_seconds)}</td>"
             f"{relative_cell}"
             f"{difference_cell}"
@@ -1162,11 +1455,32 @@ def write_html_report(
     scope = "Repository subarea data" if using_subarea else "Full-scale data"
     scope_class = "warning" if using_subarea else "ok"
     process_text = str(process_count) if process_count else "from configs_mp"
+    main_household_sample_size = next(
+        (result.household_sample_size for result in results if result.multiprocess),
+        0,
+    )
+    population_text = (
+        "all households (<code>households_sample_size: 0</code>)"
+        if main_household_sample_size == 0
+        else (
+            f"a sample of {main_household_sample_size:,} households "
+            f"(<code>households_sample_size: {main_household_sample_size}</code>)"
+        )
+    )
     generated = dt.datetime.now().astimezone().isoformat(timespec="seconds")
     warmup_text = (
-        f"{'Completed' if warmup.succeeded else 'Failed'} in {format_duration(warmup.duration_seconds)}"
+        f"{'Reused' if warmup.reused else 'Completed' if warmup.succeeded else 'Failed'} "
+        f"in {format_duration(warmup.duration_seconds)}"
         if warmup
         else "Not run"
+    )
+    resume_note = (
+        '<p class="note">Rows marked <strong>Reused</strong> came from a prior '
+        "invocation. For benchmark folders created before per-job result files "
+        "were available, elapsed runtime is reconstructed from external memory "
+        "samples when possible, otherwise from ActivitySim's completion log.</p>"
+        if any(result.reused for result in results)
+        else ""
     )
 
     legend_items = [
@@ -1230,6 +1544,7 @@ code {{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.92em
 {input_summary_html(input_summary)}
 <h2>Runtime comparison</h2>
 {runtime_table(results, report_path.parent)}
+{resume_note}
 <h2>Per-component runtime</h2>
 <p class="note">Each observation is ActivitySim's <code>run.&lt;component&gt;</code> elapsed time for one process and excludes multiprocessing orchestration and checkpoint overhead. Multiprocess components report the mean and population standard deviation across all worker shards; population SD is appropriate because every worker is observed rather than sampled. A dash is shown for serial components with only one observation. Component means are not additive wall-clock times because workers run concurrently.</p>
 {component_timing_table(results)}
@@ -1247,7 +1562,7 @@ code {{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.92em
 <h3>Tours by type</h3>
 {output_distribution_table(results, "tour_types")}
 <p class="note"><strong>Memory interpretation.</strong> Tree RSS is the sum of resident memory reported for the controller and all workers and can count shared skim pages more than once. Where the operating system permits external access, tree USS is also shown as the sum of private memory and excludes shared pages. macOS commonly restricts child-process USS, in which case the report marks it unavailable instead of substituting an internal profiler. Samples were taken externally every {sample_interval:g} seconds.</p>
-<p class="note"><strong>Benchmark controls.</strong> Both measured runs use all households (<code>households_sample_size: 0</code>) and {html.escape(process_text)} ActivitySim worker processes. ActivitySim instrumentation, memory profiling, expression profiling, trace output, variability checking, loser logging, and <code>track_skim_usage</code> are disabled. Sharrow runs use zero-based pipeline zone IDs as required; non-Sharrow runs retain original zone IDs so ActivitySim's legacy offset mapper honors OMX mappings even when matrix rows are stored in a different order.</p>
+<p class="note"><strong>Benchmark controls.</strong> Both measured runs use {population_text} and {html.escape(process_text)} ActivitySim worker processes. ActivitySim instrumentation, memory profiling, expression profiling, trace output, variability checking, loser logging, and <code>track_skim_usage</code> are disabled. Sharrow runs use zero-based pipeline zone IDs as required; non-Sharrow runs retain original zone IDs so ActivitySim's legacy offset mapper honors OMX mappings even when matrix rows are stored in a different order.</p>
 <p class="note"><strong>Data directory.</strong> <code>{html.escape(str(data_dir))}</code></p>
 <p class="note"><strong>Host.</strong> {html.escape(platform.platform())}; {os.cpu_count() or "unknown"} logical CPUs.</p>
 </main></body></html>
@@ -1294,22 +1609,40 @@ def run_benchmarks(args: argparse.Namespace, repo_root: Path) -> int:
     if args.sample_interval <= 0:
         raise ValueError("--sample-interval must be greater than zero")
 
-    if args.data_dir is None:
-        data_dir = (repo_root / "model" / "data").resolve()
-        using_subarea = True
+    result_root = make_results_dir(repo_root, args.output_dir, resume=args.resume)
+    prior_data_dir = resumed_data_dir(result_root) if args.resume else None
+    default_data_dir = (repo_root / "model" / "data").resolve()
+    if args.data_dir is not None:
+        data_dir = args.data_dir.expanduser().resolve()
+    elif prior_data_dir is not None:
+        data_dir = prior_data_dir
+    else:
+        data_dir = default_data_dir
+    using_subarea = data_dir == default_data_dir
+    if args.data_dir is None and using_subarea:
         warnings.warn(
-            "--data-dir was not supplied; only the smaller repository subarea data "
-            "will be tested.",
+            "--data-dir was not supplied; the smaller repository subarea data "
+            "will be tested or resumed.",
             stacklevel=2,
         )
-    else:
-        data_dir = args.data_dir.expanduser().resolve()
-        using_subarea = False
     validate_data_dir(data_dir)
 
-    result_root = make_results_dir(repo_root, args.output_dir)
     model_dir = repo_root / "model"
-    process_count = args.processes or read_mp_process_count(model_dir)
+    process_count = (
+        args.processes
+        or (resumed_process_count(result_root) if args.resume else None)
+        or read_mp_process_count(model_dir)
+    )
+    main_household_sample_size = args.sample_households
+    if main_household_sample_size is None and args.resume:
+        main_household_sample_size = resumed_household_sample_size(result_root)
+    if main_household_sample_size is None:
+        main_household_sample_size = 0
+    population_label = (
+        "Full model"
+        if main_household_sample_size == 0
+        else f"Model ({main_household_sample_size:,} households)"
+    )
 
     if not args.quiet:
         print("Summarizing input data...", flush=True)
@@ -1325,25 +1658,26 @@ def run_benchmarks(args: argparse.Namespace, repo_root: Path) -> int:
         },
         {
             "key": "full-sharrow",
-            "label": "Full model — Sharrow required",
+            "label": f"{population_label} — Sharrow required",
             "sharrow": "require",
             "multiprocess": True,
-            "household_sample_size": 0,
+            "household_sample_size": main_household_sample_size,
             "monitor_memory": True,
         },
         {
             "key": "full-no-sharrow",
-            "label": "Full model — Sharrow disabled",
+            "label": f"{population_label} — Sharrow disabled",
             "sharrow": False,
             "multiprocess": True,
-            "household_sample_size": 0,
+            "household_sample_size": main_household_sample_size,
             "monitor_memory": True,
         },
     ]
 
     if not args.quiet:
         print(f"Data directory: {data_dir}", flush=True)
-        print(f"Diagnostic outputs: {result_root}", flush=True)
+        action = "Resuming diagnostic outputs" if args.resume else "Diagnostic outputs"
+        print(f"{action}: {result_root}", flush=True)
         print(
             f"Inputs: {input_summary['households']:,} households, "
             f"{input_summary['persons']:,} persons, {input_summary['zones']:,} zones",
@@ -1351,9 +1685,45 @@ def run_benchmarks(args: argparse.Namespace, repo_root: Path) -> int:
         )
         if process_count is not None:
             print(f"Multiprocess workers: {process_count}", flush=True)
+        main_scope = (
+            "all households"
+            if main_household_sample_size == 0
+            else f"{main_household_sample_size:,} sampled households"
+        )
+        print(f"Main-run population: {main_scope}", flush=True)
 
     results: list[RunResult] = []
     for definition in definitions:
+        if args.resume:
+            resumed_result = load_completed_result(
+                definition=definition,
+                model_dir=model_dir,
+                data_dir=data_dir,
+                result_root=result_root,
+                process_count=process_count,
+                sample_interval=args.sample_interval,
+            )
+            if resumed_result is not None:
+                results.append(resumed_result)
+                write_run_result(
+                    result_root / resumed_result.key / "run-result.json",
+                    resumed_result,
+                )
+                if not args.quiet:
+                    print(
+                        f"Reusing completed {resumed_result.label}: "
+                        f"{format_duration(resumed_result.duration_seconds)}",
+                        flush=True,
+                    )
+                continue
+
+            preserved = preserve_incomplete_run(result_root / definition["key"])
+            if preserved is not None and not args.quiet:
+                print(
+                    f"Preserved incomplete or incompatible job at {preserved}",
+                    flush=True,
+                )
+
         result = launch_run(
             **definition,
             model_dir=model_dir,
@@ -1395,6 +1765,10 @@ def run_benchmarks(args: argparse.Namespace, repo_root: Path) -> int:
             warnings.warn(
                 f"could not summarize outputs for {result.label}: {error}", stacklevel=2
             )
+        write_run_result(
+            result_root / result.key / "run-result.json",
+            result,
+        )
 
     version = activitysim_version()
     metadata = {
@@ -1404,9 +1778,12 @@ def run_benchmarks(args: argparse.Namespace, repo_root: Path) -> int:
         "sample_interval_seconds": args.sample_interval,
         "activitysim_version": version,
         "multiprocess_workers": process_count,
+        "household_sample_size": main_household_sample_size,
         "input_summary": input_summary,
         "platform": platform.platform(),
         "logical_cpus": os.cpu_count(),
+        "resume_requested": args.resume,
+        "reused_jobs": [result.key for result in results if result.reused],
     }
     write_json_summary(result_root / "metrics.json", results, metadata)
     report_path = result_root / "report.html"
