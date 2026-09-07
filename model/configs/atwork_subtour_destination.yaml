@@ -23,3 +23,5 @@ DEST_CHOICE_LOGSUM_COLUMN_NAME: destination_logsum
 
 # comment out DEST_CHOICE_LOGSUM_COLUMN_NAME if saved alt logsum table
 DEST_CHOICE_SAMPLE_TABLE_NAME: tour_destination_sample
+
+explicit_chunk: 50_000

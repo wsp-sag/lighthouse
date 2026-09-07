@@ -35,4 +35,4 @@ OUT_PERIOD:
   social: 14
   escort: 14
 
-explicit_chunk: 0.1
+explicit_chunk: 50_000
