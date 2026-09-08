@@ -1,0 +1,5 @@
+coefficient_name,value,constrain
+coef_no_school_bus_asc,-0.05,F
+coef_unavailable,-999,T
+coef_grade_school,0.2,T
+coef_high_school,-0.1,T

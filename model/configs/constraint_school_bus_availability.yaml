@@ -1,0 +1,8 @@
+SPEC: constraint_school_bus_availability.csv
+COEFFICIENTS: constraint_school_bus_availability_coefficients.csv
+
+LOGIT_TYPE: MNL
+
+CONSTANTS:
+  MIN_SCHOOL_AGE: 5 # Youngest age eligible for school bus service
+  MAX_SCHOOL_AGE: 18 # Oldest age eligible for school bus service

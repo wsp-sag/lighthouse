@@ -1,0 +1,5 @@
+Label,Description,Expression,school_bus,no_school_bus
+util_asc,ASC,@1,,coef_no_school_bus_asc
+util_non_school_age_child,school bus is unavailable for non school age child,@(df.age<MIN_SCHOOL_AGE)|(df.age>MAX_SCHOOL_AGE),coef_unavailable,
+util_grade_school,person attends grade school,school_segment==1,coef_grade_school,
+util_high_school,person attends high school,school_segment==2,coef_high_school,
