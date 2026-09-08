@@ -23,7 +23,7 @@ NESTS:
       alternatives:
        - WALK_TRANSIT
        - DRIVE_TRANSIT
-    - RIDEHAIL
+    - RIDESOURCE
 CONSTANTS:
   orig_col_name: origin
   # TODO: verify whether dest_col_name is still needed by trip_mode_choice.csv; update the spec or remove this constant if it is truly dead
@@ -49,7 +49,7 @@ CONSTANTS:
     BIKE: 5
     WALK_TRANSIT: 6
     DRIVE_TRANSIT: 7
-    RIDEHAIL: 8
+    RIDESOURCE: 8
   I_SOV_MODES: [1]
   I_SR2_MODES: [2]
   I_SR3P_MODES: [3]
@@ -59,7 +59,7 @@ CONSTANTS:
   I_WALK_TRANSIT_MODES: [6]
   I_DRIVE_TRANSIT_MODES: [7]
   I_RIDE_HAIL_MODES: [8]
-  # RIDEHAIL Settings
+  # RIDESOURCE Settings
   TNC_single_waitTime_mean:
     1: 3.0
     2: 6.3
@@ -90,7 +90,7 @@ CONSTANTS:
   topology_bike_multiplier: 20
   topology_trn_multiplier: 2.20
   topology_walk_multiplier: 15
-  ridehail_wait_time_multiplier: 1.5
+  ridesource_wait_time_multiplier: 1.5
   walktimelong_multiplier: 5
   biketimelong_multiplier: 5
   xfers_wlk_multiplier: 5

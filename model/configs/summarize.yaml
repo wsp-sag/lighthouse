@@ -72,7 +72,7 @@ trips_merged:
         DRIVE_TRANSIT: Transit
         WALK: Non-Motorized
         BIKE: Non-Motorized
-        RIDEHAIL: Ride Hail
+        RIDESOURCE: Ridesource
     - column: trip_mode
       label: major_access_trip_mode
       map:
@@ -83,7 +83,7 @@ trips_merged:
         DRIVE_TRANSIT: Transit
         WALK: Non-Motorized
         BIKE: Non-Motorized
-        RIDEHAIL: Ride Hail
+        RIDESOURCE: Ridesource
 # preprocessor:
 #   DF: trips_mergerd
 #   SPEC: summarize_preprocessor.csv
@@ -179,9 +179,9 @@ trips_merged:
 #         DRIVEACCESS: Transit
 #         WALK: Non-Motorized
 #         BIKE: Non-Motorized
-#         TAXI: Ride Hail
-#         TNC_SINGLE: Ride Hail
-#         TNC_SHARED: Ride Hail
+#         TAXI: Ridesource
+#         TNC_SINGLE: Ridesource
+#         TNC_SHARED: Ridesource
 #     - column: trip_mode
 #       label: major_access_trip_mode
 #       map:
@@ -203,6 +203,6 @@ trips_merged:
 #         DRIVE_COM: Drive to Transit
 #         WALK: Non-Motorized
 #         BIKE: Non-Motorized
-#         TAXI: Ride Hail
-#         TNC_SINGLE: Ride Hail
-#         TNC_SHARED: Ride Hail
+#         TAXI: Ridesource
+#         TNC_SINGLE: Ridesource
+#         TNC_SHARED: Ridesource

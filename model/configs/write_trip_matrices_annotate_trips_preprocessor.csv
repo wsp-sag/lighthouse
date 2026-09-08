@@ -15,7 +15,7 @@ Description,Target,Expression
 ,BIKE_AM,((trips.trip_mode == 'BIKE') & is_am) * tour_participants
 ,WALK_TRANSIT_AM,((trips.trip_mode == 'WALK_TRANSIT') & is_am) * tour_participants
 ,DRIVE_TRANSIT_AM,((trips.trip_mode == 'DRIVE_TRANSIT') & is_am) * tour_participants
-,RIDEHAIL_AM,((trips.trip_mode == 'RIDEHAIL') & is_am) * tour_participants
+,RIDESOURCE_AM,((trips.trip_mode == 'RIDESOURCE') & is_am) * tour_participants
 # md trips,,
 ,DRIVEALONE_MD,((trips.trip_mode == 'DRIVEALONE') & is_md) * tour_participants
 ,SHARED2_MD,((trips.trip_mode == 'SHARED2') & is_md) * tour_participants / OCC_SHARED2
@@ -24,7 +24,7 @@ Description,Target,Expression
 ,BIKE_MD,((trips.trip_mode == 'BIKE') & is_md) * tour_participants
 ,WALK_TRANSIT_MD,((trips.trip_mode == 'WALK_TRANSIT') & is_md) * tour_participants
 ,DRIVE_TRANSIT_MD,((trips.trip_mode == 'DRIVE_TRANSIT') & is_md) * tour_participants
-,RIDEHAIL_MD,((trips.trip_mode == 'RIDEHAIL') & is_md) * tour_participants
+,RIDESOURCE_MD,((trips.trip_mode == 'RIDESOURCE') & is_md) * tour_participants
 # pm trips,,
 ,DRIVEALONE_PM,((trips.trip_mode == 'DRIVEALONE') & is_pm) * tour_participants
 ,SHARED2_PM,((trips.trip_mode == 'SHARED2') & is_pm) * tour_participants / OCC_SHARED2
@@ -33,7 +33,7 @@ Description,Target,Expression
 ,BIKE_PM,((trips.trip_mode == 'BIKE') & is_pm) * tour_participants
 ,WALK_TRANSIT_PM,((trips.trip_mode == 'WALK_TRANSIT') & is_pm) * tour_participants
 ,DRIVE_TRANSIT_PM,((trips.trip_mode == 'DRIVE_TRANSIT') & is_pm) * tour_participants
-,RIDEHAIL_PM,((trips.trip_mode == 'RIDEHAIL') & is_pm) * tour_participants
+,RIDESOURCE_PM,((trips.trip_mode == 'RIDESOURCE') & is_pm) * tour_participants
 # ev trips,,
 ,DRIVEALONE_EV,((trips.trip_mode == 'DRIVEALONE') & is_ev) * tour_participants
 ,SHARED2_EV,((trips.trip_mode == 'SHARED2') & is_ev) * tour_participants / OCC_SHARED2
@@ -42,4 +42,4 @@ Description,Target,Expression
 ,BIKE_EV,((trips.trip_mode == 'BIKE') & is_ev) * tour_participants
 ,WALK_TRANSIT_EV,((trips.trip_mode == 'WALK_TRANSIT') & is_ev) * tour_participants
 ,DRIVE_TRANSIT_EV,((trips.trip_mode == 'DRIVE_TRANSIT') & is_ev) * tour_participants
-,RIDEHAIL_EV,((trips.trip_mode == 'RIDEHAIL') & is_ev) * tour_participants
+,RIDESOURCE_EV,((trips.trip_mode == 'RIDESOURCE') & is_ev) * tour_participants

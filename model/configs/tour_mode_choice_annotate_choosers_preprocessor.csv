@@ -30,7 +30,7 @@ local,_DF_IS_TOUR,'tour_type' in df.columns
 ,drive_transit_available,(_destination_distance_to_transit > 0) & (df.auto_ownership > 0)
 ,origin_walk_time,_origin_distance_to_transit*60/walkSpeed
 ,destination_walk_time,_destination_distance_to_transit*60/walkSpeed
-# RIDEHAIL,,
+# RIDESOURCE,,
 ,origin_density_measure,"(reindex(land_use.TOTPOP, df[orig_col_name]) + reindex(land_use.TOTEMP, df[orig_col_name])) / (reindex(land_use.TOTACRE, df[orig_col_name]) / 640)"
 ,dest_density_measure,"(reindex(land_use.TOTPOP, df[dest_col_name]) + reindex(land_use.TOTEMP, df[dest_col_name])) / (reindex(land_use.TOTACRE, df[dest_col_name]) / 640)"
 ,origin_density,"pd.cut(origin_density_measure, bins=[-np.inf, 500, 2000, 5000, 15000, np.inf], labels=[5, 4, 3, 2, 1]).astype(int)"
@@ -42,7 +42,7 @@ local,_DF_IS_TOUR,'tour_type' in df.columns
 ,dest_zone_singleTNC_wait_time_sd,"dest_density.map({k: v for k, v in TNC_single_waitTime_sd.items()})"
 ,origSingleTNCWaitTime,"rng.lognormal_for_df(df, mu=origin_zone_singleTNC_wait_time_mean, sigma=origin_zone_singleTNC_wait_time_sd, broadcast=True, scale=True).clip(min_waitTime, max_waitTime)"
 ,destSingleTNCWaitTime,"rng.lognormal_for_df(df, mu=dest_zone_singleTNC_wait_time_mean, sigma=dest_zone_singleTNC_wait_time_sd, broadcast=True, scale=True).clip(min_waitTime, max_waitTime)"
-,totalWaitRideHail,origSingleTNCWaitTime + destSingleTNCWaitTime
+,totalWaitRidesource,origSingleTNCWaitTime + destSingleTNCWaitTime
 #,,
 ,_free_parking_available,(df.tour_type == 'work') & df.free_parking_at_work if _DF_IS_TOUR else False
 ,_dest_hourly_peak_parking_cost,"reindex(land_use.PRKCST, df[dest_col_name])"

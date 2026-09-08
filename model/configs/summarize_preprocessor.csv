@@ -3,16 +3,16 @@ Description,Target,Expression
 ,_WALK_SPEED,3
 ,_BIKE_SPEED,12
 ,_SHORT_WALK, 0.333 # miles
-,_RIDEHAIL_WAIT_TIME, 8.4 # minutes
-,_RIDEHAIL_BASE_FARE, 2.20 # $S
-,_RIDEHAIL_COST_PER_MILE, 2.30 # $
-,_RIDEHAIL_COST_PER_MINUTE, 0.10 # $
+,_RIDESOURCE_WAIT_TIME, 8.4 # minutes
+,_RIDESOURCE_BASE_FARE, 2.20 # $S
+,_RIDESOURCE_COST_PER_MILE, 2.30 # $
+,_RIDESOURCE_COST_PER_MINUTE, 0.10 # $
 ## Distances
 # Auto distance
 ,_sov_dist,trip_odt_skims['dist']
 ,_hov2_dist,trip_odt_skims['dist']
 ,_hov3_dist,trip_odt_skims['dist']
-,_ridehail_dist,trip_odt_skims['dist']
+,_ridesource_dist,trip_odt_skims['dist']
 # Transit auto access/eggress distance (miles x 100)
 ,_drv_transit_wlk_ddist,trip_odt_skims['ta_ddist']/100
 # Bike distance
@@ -24,7 +24,7 @@ Description,Target,Expression
 ,_da_time,trip_odt_skims['da_time']
 ,_sr_time,trip_odt_skims['sr_time']
 ,_hov3_time,trip_odt_skims['sr_time']
-,_ridehail_time,trip_odt_skims['sr_time']
+,_ridesource_time,trip_odt_skims['sr_time']
 # Transit vehicle time (minutes x 100)
 ,_drv_transit_wlk_totivt,trip_odt_skims['ta_ivtt']/100
 ,_wlk_transit_wlk_totivt,trip_odt_skims['tw_ivtt']/100
@@ -48,7 +48,7 @@ Description,Target,Expression
 ,_sov_toll,trip_odt_skims['da_toll']
 ,_hov2_toll,trip_odt_skims['sr_toll']
 ,_hov3_toll,trip_odt_skims['sr_toll']
-,_ridehail_toll,trip_odt_skims['sr_toll']
+,_ridesource_toll,trip_odt_skims['sr_toll']
 # Transit fares
 ,_drv_transit_wlk_far,trip_odt_skims['ta_fare']
 ,_wlk_transit_wlk_far,trip_odt_skims['tw_fare']
@@ -58,7 +58,7 @@ Description,Target,Expression
 ,_hov2_mode,trips_merged['trip_mode'] == 'SHARED2'
 ,_hov3_mode,trips_merged['trip_mode'] == 'SHARED3'
 # Taxi/TNC
-,_ridehail_mode,trips_merged['trip_mode'] == 'RIDEHAIL'
+,_ridesource_mode,trips_merged['trip_mode'] == 'RIDESOURCE'
 # Transit
 ,_drive_transit_mode,trips_merged['trip_mode'] == 'DRIVE_TRANSIT'
 ,_walk_transit_mode,trips_merged['trip_mode'] == 'WALK_TRANSIT'
@@ -70,13 +70,13 @@ Description,Target,Expression
 ### Time
 ## Auto
 ,_transit_auto_time,(_drive_transit_mode * _drv_transit_wlk_dtim)
-,auto_time,(_sov_mode * _da_time) + (_hov2_mode * _sr_time) + (_hov3_mode * _hov3_time) + (_ridehail_mode * _ridehail_time)
+,auto_time,(_sov_mode * _da_time) + (_hov2_mode * _sr_time) + (_hov3_mode * _hov3_time) + (_ridesource_mode * _ridesource_time)
 # Transit Vehicle
 ,transit_vehicle_time,(_drive_transit_mode * _drv_transit_wlk_totivt) + (_walk_transit_mode * _wlk_transit_wlk_totivt)
 # Wait
 ,_transit_initial_wait_time,(_drive_transit_mode * _drv_transit_wlk_iwait) + (_walk_transit_mode * _wlk_transit_wlk_iwait)
 ,_transit_transfer_wait_time,(_drive_transit_mode * _drv_transit_wlk_xwait) + (_walk_transit_mode * _wlk_transit_wlk_xwait)
-,wait_time,_transit_initial_wait_time + _transit_transfer_wait_time + (_ridehail_mode * _RIDEHAIL_WAIT_TIME)
+,wait_time,_transit_initial_wait_time + _transit_transfer_wait_time + (_ridesource_mode * _RIDESOURCE_WAIT_TIME)
 # Walk
 ,_transit_walk_access_time,(_walk_transit_mode * _wlk_wacc)
 ,_transit_walk_egress_time,(_drive_transit_mode * _wlk_wegr) + (_walk_transit_mode * _wlk_wegr)
@@ -87,15 +87,15 @@ Description,Target,Expression
 ,total_time,auto_time + transit_vehicle_time + wait_time + walk_time + bike_time
 ## Distance
 # Auto
-,_ridehail_distance,(_ridehail_mode * _ridehail_dist)
-,auto_distance,(_sov_mode * _sov_dist) + (_hov2_mode * _hov2_dist) + (_hov3_mode * _hov3_dist) + (_ridehail_mode * _ridehail_distance)
+,_ridesource_distance,(_ridesource_mode * _ridesource_dist)
+,auto_distance,(_sov_mode * _sov_dist) + (_hov2_mode * _hov2_dist) + (_hov3_mode * _hov3_dist) + (_ridesource_mode * _ridesource_distance)
 # Walk
 ,walk_distance,(walk_time / 60 * _WALK_SPEED)
 # Bike
 ,bike_distance,_bike_mode * _bike_dist
 ## Cost
 ,_transit_fare_cost,(_drive_transit_mode * _drv_transit_wlk_far) + (_walk_transit_mode * _wlk_transit_wlk_far)
-,_ridehail_cost,_RIDEHAIL_BASE_FARE + (_ridehail_distance * _RIDEHAIL_COST_PER_MILE) + (_ridehail_time * _RIDEHAIL_COST_PER_MINUTE)
-,fare_cost,_transit_fare_cost + _ridehail_cost
-,toll_cost,(_sov_mode * _sov_toll) + (_hov2_mode * _hov2_toll) + (_hov3_mode * _hov3_toll) + (_ridehail_mode * _ridehail_toll)
+,_ridesource_cost,_RIDESOURCE_BASE_FARE + (_ridesource_distance * _RIDESOURCE_COST_PER_MILE) + (_ridesource_time * _RIDESOURCE_COST_PER_MINUTE)
+,fare_cost,_transit_fare_cost + _ridesource_cost
+,toll_cost,(_sov_mode * _sov_toll) + (_hov2_mode * _hov2_toll) + (_hov3_mode * _hov3_toll) + (_ridesource_mode * _ridesource_toll)
 ,total_cost,fare_cost + toll_cost

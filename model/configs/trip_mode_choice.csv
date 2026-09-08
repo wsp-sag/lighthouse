@@ -1,4 +1,4 @@
-Label,Description,Expression,DRIVEALONE,SHARED2,SHARED3,WALK,BIKE,WALK_TRANSIT,DRIVE_TRANSIT,RIDEHAIL
+Label,Description,Expression,DRIVEALONE,SHARED2,SHARED3,WALK,BIKE,WALK_TRANSIT,DRIVE_TRANSIT,RIDESOURCE
 #,Drive alone,,,,,,,,,
 util_DRIVEALONEFREE_Unavailable,DRIVEALONEFREE - Unavailable,sov_available == False,-999,,,,,,,
 util_DRIVEALONEFREE_Unavailable_for_zero_auto_households,DRIVEALONEFREE - Unavailable for zero auto households,auto_ownership == 0,-999,,,,,,,
@@ -81,11 +81,11 @@ util_DRIVE_LOC_inbound_Drive_time,DRIVE_LOC inbound - Drive time,@df.inbound * c
 util_DRIVE_LOC_inbound_Walk_time,DRIVE_LOC inbound - Walk time,@df.inbound * coef_waux_multiplier * odt_skims['ta_walk']/TRANSIT_SCALE_FACTOR,,,,,,,coef_ivt,
 util_DRIVE_LOC_inbound_Fare_and_operating_cost,DRIVE_LOC inbound - Fare and operating cost,@df.inbound * ivt_cost_multiplier * df.ivot * (odt_skims['ta_fare'] + costPerMile*odt_skims['ta_ddist']/TRANSIT_SCALE_FACTOR),,,,,,,coef_ivt,
 util_DRIVE_LOC_inbound_Ratio_of_drive_access_distance_to_OD_distance,DRIVE_LOC inbound - Ratio of drive access distance to OD distance,@df.outbound * dacc_ratio_multiplier * (odt_skims['ta_ddist']/TRANSIT_SCALE_FACTOR)/ (od_skims['DIST']),,,,,,,1,
-#,Ridehail (TNC & Taxi),,,,,,,,,
-util_RIDEHAIL_In_vehicle_time,RIDEHAIL - In-vehicle time,@odt_skims['sr_time'],,,,,,,,coef_ivt
-util_RIDEHAIL_Wait_time,RIDEHAIL - Wait time,@ridehail_wait_time_multiplier * df.totalWaitRideHail,,,,,,,,coef_ivt
-util_RIDEHAIL_Tolls,RIDEHAIL - Tolls,@ivt_cost_multiplier * df.ivot * 100 * odt_skims['sr_toll'],,,,,,,,coef_ivt
-util_RIDEHAIL_Fare,RIDEHAIL - Fare,@ivt_cost_multiplier * df.ivot * 100 * odt_skims['rs_fare'],,,,,,,,coef_ivt
+#,Ridesource (TNC & Taxi),,,,,,,,,
+util_RIDESOURCE_In_vehicle_time,RIDESOURCE - In-vehicle time,@odt_skims['sr_time'],,,,,,,,coef_ivt
+util_RIDESOURCE_Wait_time,RIDESOURCE - Wait time,@ridesource_wait_time_multiplier * df.totalWaitRidesource,,,,,,,,coef_ivt
+util_RIDESOURCE_Tolls,RIDESOURCE - Tolls,@ivt_cost_multiplier * df.ivot * 100 * odt_skims['sr_toll'],,,,,,,,coef_ivt
+util_RIDESOURCE_Fare,RIDESOURCE - Fare,@ivt_cost_multiplier * df.ivot * 100 * odt_skims['rs_fare'],,,,,,,,coef_ivt
 #,,,,,,,,,,
 util_tour_mode_is_sov,Drive alone tour mode availability,tour_mode_is_SOV,,-999,-999,,-999,-999,-999,-999
 util_tour_mode_is_shared_ride_2,Shared Ride 2 tour mode availability,tour_mode_is_SR2,,,-999,,-999,-999,-999,-999
@@ -94,36 +94,36 @@ util_tour_mode_is_walk,Walk tour mode availability,tour_mode_is_walk,-999,-999,-
 util_tour_mode_is_bike,Bike tour mode availability,tour_mode_is_bike,-999,-999,-999,,,-999,-999,-999
 util_tour_mode_is_walk_transit,Walk to Transit tour mode availability,tour_mode_is_walk_transit,-999,,,,-999,,-999,
 util_tour_mode_is_drive_transit,Drive to Transit tour modes availability,tour_mode_is_drive_transit,-999,-999,-999,-999,-999,-999,,-999
-util_tour_mode_is_ride_hail,Ride hail tour modes availability,tour_mode_is_ride_hail,-999,-999,-999,,-999,-999,-999,
+util_tour_mode_is_ride_source,Ride source tour modes availability,tour_mode_is_ride_source,-999,-999,-999,,-999,-999,-999,
 ,#indiv tour ASCs,,,,,,,,,
 util_Drive_Alone_tour_mode_ASC_shared_ride_2_df_is_indiv,Drive Alone tour mode ASC -- shared ride 2,@(df.is_indiv & df.tour_mode_is_SOV),,sov_ASC_sr2,,,,,,
 util_Drive_Alone_tour_mode_ASC_shared_ride_3_plus,Drive Alone tour mode ASC -- shared ride 3+,@(df.is_indiv & df.tour_mode_is_SOV),,,sov_ASC_sr3p,,,,,
 util_Drive_Alone_tour_mode_ASC_walk,Drive Alone tour mode ASC -- walk,@(df.is_indiv & df.tour_mode_is_SOV),,,,sov_ASC_walk,,,,
-util_Drive_Alone_tour_mode_ASC_ride_hail,Drive Alone tour mode ASC -- ride hail,@(df.is_indiv & df.tour_mode_is_SOV),,,,,,,,sov_ASC_rh
+util_Drive_Alone_tour_mode_ASC_ride_source,Drive Alone tour mode ASC -- ride source,@(df.is_indiv & df.tour_mode_is_SOV),,,,,,,,sov_ASC_rh
 util_Shared_Ride_2_tour_mode_ASC_shared_ride_2,Shared Ride 2 tour mode ASC -- shared ride 2,@(df.is_indiv & df.tour_mode_is_SR2),,sr2_ASC_sr2,,,,,,
 util_Shared_Ride_2_tour_mode_ASC_shared_ride_3_plus,Shared Ride 2 tour mode ASC -- shared ride 3+,@(df.is_indiv & df.tour_mode_is_SR2),,,sr2_ASC_sr3p,,,,,
 util_Shared_Ride_2_tour_mode_ASC_walk,Shared Ride 2 tour mode ASC -- walk,@(df.is_indiv & df.tour_mode_is_SR2),,,,sr2_ASC_walk,,,,
-util_Shared_Ride_2_tour_mode_ASC_ride_hail,Shared Ride 2 tour mode ASC -- ride hail,@(df.is_indiv & df.tour_mode_is_SR2),,,,,,,,sr2_ASC_rh
+util_Shared_Ride_2_tour_mode_ASC_ride_source,Shared Ride 2 tour mode ASC -- ride source,@(df.is_indiv & df.tour_mode_is_SR2),,,,,,,,sr2_ASC_rh
 util_Shared_Ride_3_tour_mode_ASC_shared_ride_2,Shared Ride 3+ tour mode ASC -- shared ride 2,@(df.is_indiv & df.tour_mode_is_SR3P),,sr3p_ASC_sr2,,,,,,
 util_Shared_Ride_3_tour_mode_ASC_shared_ride_3_plus,Shared Ride 3+ tour mode ASC -- shared ride 3+,@(df.is_indiv & df.tour_mode_is_SR3P),,,sr3p_ASC_sr3p,,,,,
 util_Shared_Ride_3_tour_mode_ASC_walk,Shared Ride 3+ tour mode ASC -- walk,@(df.is_indiv & df.tour_mode_is_SR3P),,,,sr3p_ASC_walk,,,,
-util_Shared_Ride_3_tour_mode_ASC_ride_hail,Shared Ride 3+ tour mode ASC -- ride hail,@(df.is_indiv & df.tour_mode_is_SR3P),,,,,,,,sr3p_ASC_rh
-util_Walk_tour_mode_ASC_ride_hail,Walk tour mode ASC -- ride hail,@df.is_indiv & (df.i_tour_mode == I_WALK_MODE),,,,,,,,walk_ASC_rh
+util_Shared_Ride_3_tour_mode_ASC_ride_source,Shared Ride 3+ tour mode ASC -- ride source,@(df.is_indiv & df.tour_mode_is_SR3P),,,,,,,,sr3p_ASC_rh
+util_Walk_tour_mode_ASC_ride_source,Walk tour mode ASC -- ride source,@df.is_indiv & (df.i_tour_mode == I_WALK_MODE),,,,,,,,walk_ASC_rh
 util_Bike_tour_mode_ASC_walk,Bike tour mode ASC -- walk,@df.is_indiv & (df.i_tour_mode == I_BIKE_MODE),,,,bike_ASC_walk,,,,
-util_Bike_tour_mode_ASC_ride_hail,Bike tour mode ASC -- ride hail,@df.is_indiv & (df.i_tour_mode == I_BIKE_MODE),,,,,,,,bike_ASC_rh
+util_Bike_tour_mode_ASC_ride_source,Bike tour mode ASC -- ride source,@df.is_indiv & (df.i_tour_mode == I_BIKE_MODE),,,,,,,,bike_ASC_rh
 util_Walk_to_Transit_tour_mode_ASC_walk_transit,Walk to Transit tour mode ASC,@(df.is_indiv & df.tour_mode_is_walk_transit),,,,,,,,
 util_Walk_to_Transit_tour_mode_ASC_shared_ride_2,Walk to Transit tour mode ASC -- shared ride 2,@(df.is_indiv & df.tour_mode_is_walk_transit),,walk_transit_ASC_sr2,,,,,,
 util_Walk_to_Transit_tour_mode_ASC_shared_ride_3_plus,Walk to Transit tour mode ASC -- shared ride 3+,@(df.is_indiv & df.tour_mode_is_walk_transit),,,walk_transit_ASC_sr3p,,,,,
 util_Walk_to_Transit_tour_mode_ASC_walk,Walk to Transit tour mode ASC -- walk,@(df.is_indiv & df.tour_mode_is_walk_transit),,,,walk_transit_ASC_walk,,,,
-util_Walk_to_Transit_tour_mode_ASC_ride_hail,Walk to Transit tour mode ASC -- ride hail,@(df.is_indiv & df.tour_mode_is_walk_transit),,,,,,,,walk_transit_ASC_rh
-util_Drive_to_Transit_tour_mode_ASC_ride_hail,Drive to Transit tour mode ASC -- ride hail,@(df.is_indiv & df.tour_mode_is_drive_transit),,,,,,,,drive_transit_ASC_rh
-util_Ride_Hail_tour_mode_ASC_shared_ride_2,Ride Hail tour mode ASC -- shared ride 2,@(df.is_indiv & df.tour_mode_is_ride_hail),,ride_hail_ASC_sr2,,,,,,
-util_Ride_Hail_tour_mode_ASC_shared_ride_3_plus,Ride Hail tour mode ASC -- shared ride 3+,@(df.is_indiv & df.tour_mode_is_ride_hail),,,ride_hail_ASC_sr3p,,,,,
-util_Ride_Hail_tour_mode_ASC_walk,Ride Hail tour mode ASC -- walk,@(df.is_indiv & df.tour_mode_is_ride_hail),,,,ride_hail_ASC_walk,,,,
-util_Ride_Hail_tour_mode_ASC_walk_to_transit,Ride Hail tour mode ASC -- walk to transit,@(df.is_indiv & df.tour_mode_is_ride_hail),,,,,,ride_hail_ASC_walk_transit,,
-util_Ride_Hail_tour_mode_ASC_ride_hail_taxi,Ride Hail tour mode ASC -- ride hail,@(df.is_indiv & df.tour_mode_is_ride_hail),,,,,,,,ride_hail_ASC_taxi
-util_Ride_Hail_tour_mode_ASC_ride_hail_single,Ride Hail tour mode ASC -- ride hail,@(df.is_indiv & df.tour_mode_is_ride_hail),,,,,,,,
-util_Ride_Hail_tour_mode_ASC_ride_hail_shared,Ride Hail tour mode ASC -- ride hail,@(df.is_indiv & df.tour_mode_is_ride_hail),,,,,,,,
+util_Walk_to_Transit_tour_mode_ASC_ride_source,Walk to Transit tour mode ASC -- ride source,@(df.is_indiv & df.tour_mode_is_walk_transit),,,,,,,,walk_transit_ASC_rh
+util_Drive_to_Transit_tour_mode_ASC_ride_source,Drive to Transit tour mode ASC -- ride source,@(df.is_indiv & df.tour_mode_is_drive_transit),,,,,,,,drive_transit_ASC_rh
+util_Ride_Source_tour_mode_ASC_shared_ride_2,Ridesource tour mode ASC -- shared ride 2,@(df.is_indiv & df.tour_mode_is_ride_source),,ride_source_ASC_sr2,,,,,,
+util_Ride_Source_tour_mode_ASC_shared_ride_3_plus,Ridesource tour mode ASC -- shared ride 3+,@(df.is_indiv & df.tour_mode_is_ride_source),,,ride_source_ASC_sr3p,,,,,
+util_Ride_Source_tour_mode_ASC_walk,Ridesource tour mode ASC -- walk,@(df.is_indiv & df.tour_mode_is_ride_source),,,,ride_source_ASC_walk,,,,
+util_Ride_Source_tour_mode_ASC_walk_to_transit,Ridesource tour mode ASC -- walk to transit,@(df.is_indiv & df.tour_mode_is_ride_source),,,,,,ride_source_ASC_walk_transit,,
+util_Ride_Source_tour_mode_ASC_ride_source_taxi,Ridesource tour mode ASC -- ride source,@(df.is_indiv & df.tour_mode_is_ride_source),,,,,,,,ride_source_ASC_taxi
+util_Ride_Source_tour_mode_ASC_ride_source_single,Ridesource tour mode ASC -- ride source,@(df.is_indiv & df.tour_mode_is_ride_source),,,,,,,,
+util_Ride_Source_tour_mode_ASC_ride_source_shared,Ridesource tour mode ASC -- ride source,@(df.is_indiv & df.tour_mode_is_ride_source),,,,,,,,
 #,#,,,,,,,,,
 util_Walk_not_available_for_long_distances,Walk not available for long distances,@df.tour_mode_is_walk & (od_skims['dist_nm'] > 3),,,,-999,,,,
 util_Bike_not_available_for_long_distances,Bike not available for long distances,@df.tour_mode_is_walk & (od_skims['dist_nm'] > 8),,,,,-999,,,

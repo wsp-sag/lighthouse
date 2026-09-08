@@ -28,8 +28,8 @@ MATRICES:
         data_field: WALK_TRANSIT_AM
       - name: DRIVE_TRANSIT_AM
         data_field: DRIVE_TRANSIT_AM
-      - name: RIDEHAIL_AM
-        data_field: RIDEHAIL_AM
+      - name: RIDESOURCE_AM
+        data_field: RIDESOURCE_AM
   - file_name: trips_md.omx
     tables:
       - name: DRIVEALONE_MD
@@ -46,8 +46,8 @@ MATRICES:
         data_field: WALK_TRANSIT_MD
       - name: DRIVE_TRANSIT_MD
         data_field: DRIVE_TRANSIT_MD
-      - name: RIDEHAIL_MD
-        data_field: RIDEHAIL_MD
+      - name: RIDESOURCE_MD
+        data_field: RIDESOURCE_MD
   - file_name: trips_pm.omx
     tables:
       - name: DRIVEALONE_PM
@@ -64,8 +64,8 @@ MATRICES:
         data_field: WALK_TRANSIT_PM
       - name: DRIVE_TRANSIT_PM
         data_field: DRIVE_TRANSIT_PM
-      - name: RIDEHAIL_PM
-        data_field: RIDEHAIL_PM
+      - name: RIDESOURCE_PM
+        data_field: RIDESOURCE_PM
   - file_name: trips_ev.omx
     tables:
       - name: DRIVEALONE_EV
@@ -82,8 +82,8 @@ MATRICES:
         data_field: WALK_TRANSIT_EV
       - name: DRIVE_TRANSIT_EV
         data_field: DRIVE_TRANSIT_EV
-      - name: RIDEHAIL_EV
-        data_field: RIDEHAIL_EV
+      - name: RIDESOURCE_EV
+        data_field: RIDESOURCE_EV
 CONSTANTS:
   time_periods:
     AM:

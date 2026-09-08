@@ -24,7 +24,7 @@ NESTS:
       alternatives:
        - WALK_TRANSIT
        - DRIVE_TRANSIT
-    - RIDEHAIL
+    - RIDESOURCE
 
 CONSTANTS:
   costPerMile: 24.4
@@ -99,7 +99,7 @@ CONSTANTS:
   drvtrn_distpen_0_multiplier: 270
   drvtrn_distpen_max: 15
   density_index_multiplier: -0.2
-  ridehail_wait_time_multiplier: 1.5
+  ridesource_wait_time_multiplier: 1.5
 
 preprocessor:
   SPEC: tour_mode_choice_annotate_choosers_preprocessor
