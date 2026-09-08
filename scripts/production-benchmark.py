@@ -393,7 +393,7 @@ def locked_image_name(root: Path) -> str:
 
 def config_fingerprint(root: Path) -> str:
     digest = hashlib.sha256()
-    for directory_name in ("configs", "configs_mp", "configs_64gb"):
+    for directory_name in ("configs", "configs_mp"):
         directory = root / "model" / directory_name
         if not directory.is_dir():
             continue
@@ -707,9 +707,6 @@ def container_worker(spec_path: Path) -> int:
         model_dir = Path(spec["model_dir"])
         if spec["multiprocess"]:
             configs: list[Path] = []
-            profile_dir = model_dir / "configs_64gb"
-            if profile_dir.is_dir():
-                configs.append(profile_dir)
             configs.extend((model_dir / "configs_mp", model_dir / "configs"))
             configs_dir = tuple(configs)
         else:
