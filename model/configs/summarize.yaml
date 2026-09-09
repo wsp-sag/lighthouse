@@ -160,12 +160,9 @@ trips_merged:
 #     - column: trip_mode
 #       label: major_trip_mode
 #       map:
-#         DRIVEALONEFREE: SOV
-#         DRIVEALONEPAY: SOV
-#         SHARED2FREE: HOV
-#         SHARED2PAY: HOV
-#         SHARED3FREE: HOV
-#         SHARED3PAY: HOV
+#         DRIVEALONE: SOV
+#         SHARED2: HOV
+#         SHARED3: HOV
 #         WALK_LOC: Transit
 #         WALK_LRF: Transit
 #         WALK_EXP: Transit
@@ -185,12 +182,9 @@ trips_merged:
 #     - column: trip_mode
 #       label: major_access_trip_mode
 #       map:
-#         DRIVEALONEFREE: SOV
-#         DRIVEALONEPAY: SOV
-#         SHARED2FREE: HOV
-#         SHARED2PAY: HOV
-#         SHARED3FREE: HOV
-#         SHARED3PAY: HOV
+#         DRIVEALONE: SOV
+#         SHARED2: HOV
+#         SHARED3: HOV
 #         WALK_LOC: Walk to Transit
 #         WALK_LRF: Walk to Transit
 #         WALK_EXP: Walk to Transit
