@@ -52,13 +52,14 @@ CONSTANTS:
   upperMD: 15
   # TODO: verify whether upperPM is still needed by tour_mode_choice.csv; update the spec or remove this constant if it is truly dead
   upperPM: 19
-  TNC_single_waitTime_mean: 
-    1: 3.0
-    2: 6.3
-    3: 8.4
-    4: 8.5
-    5: 10.3
-  TNC_single_waitTime_sd: 
+  TNC_waitTime_mean: 
+    1: 5.0
+    2: 5.0
+    3: 10.0
+    4: 30.0
+    5: 60.0
+    6: 90.0
+  TNC_waitTime_sd: 
     1: 0
     2: 0
     3: 0
