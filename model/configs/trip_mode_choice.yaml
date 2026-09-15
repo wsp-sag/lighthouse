@@ -76,9 +76,6 @@ CONSTANTS:
   min_waitTime: 0
   max_waitTime: 50
   ivt_cost_multiplier: 0.6
-  topology_bike_multiplier: 20
-  topology_trn_multiplier: 2.20
-  topology_walk_multiplier: 15
   ridesource_wait_time_multiplier: 1.5
   walktimelong_multiplier: 5
   biketimelong_multiplier: 5
