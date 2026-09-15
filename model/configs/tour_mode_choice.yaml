@@ -40,8 +40,6 @@ CONSTANTS:
   # TODO: verify whether bikeThresh is still needed by tour_mode_choice.csv; update the spec or remove this constant if it is truly dead
   bikeThresh: 6.00
   bikeSpeed: 12.00
-  # TODO: verify whether maxCbdAreaTypeThresh is still needed by tour_mode_choice.csv; update the spec or remove this constant if it is truly dead
-  maxCbdAreaTypeThresh: 2
   # TODO: verify whether indivTour is still needed by tour_mode_choice.csv; update the spec or remove this constant if it is truly dead
   indivTour: 1.00000
   # TODO: verify whether upperEV is still needed by tour_mode_choice.csv; update the spec or remove this constant if it is truly dead
