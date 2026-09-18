@@ -38,10 +38,10 @@ coef_num_preschool_in_hh_school1,-0.1335,F
 coef_num_preschool_in_hh_school2,-0.5577,F
 coef_num_preschool_in_hh_work_and_school,-0.1251,F
 coef_num_non_workers_in_hh_school1,0.2574,F
-coef_hh_income_gt_50k_work,-0.0528,F
-coef_hh_income_gt_50k_school1,0.0347,F
-coef_hh_income_gt_50k_worker_work_and_school,0.0347,F
-coef_hh_income_gt_50k_student_work_and_school,-0.0528,F
+coef_hh_income_high_and_very_high_work,-0.0528,F
+coef_hh_income_high_and_very_high_school1,0.0347,F
+coef_hh_income_high_and_very_high_worker_work_and_school,0.0347,F
+coef_hh_income_high_and_very_high_student_work_and_school,-0.0528,F
 coef_non_family_hh_category1,-0.25,F
 coef_non_family_hh_category2,-0.1792,F
 coef_num_under_16_not_at_school_work2,0.1804
