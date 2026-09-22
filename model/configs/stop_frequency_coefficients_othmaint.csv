@@ -17,7 +17,7 @@ Number of persons participating in the tour.Return stops interaction,0.4904,coef
 Dummy for the duration of the tour being equal or greater than or equal to 9 hours ,0.5134,coef_dummy_for_the_duration_of_the_tour_being_equal_or_greater_than_or_equal_to_9_hours_
 dummy for distance less than 20 Miles ,-0.408,coef_dummy_for_distance_less_than_20_miles_
 dummy for distance in miles,0.0273,coef_dummy_for_distance_in_miles
-No stops if tour mode is driveTransit,-999.0,coef_no_stops_if_tour_mode_is_drivetransit
+No stops if tour mode is driveTransit,-999.0,coef_no_stops_if_tour_mode_is_drive_transit
 Alternative specific constant for return  stops,-0.585,coef_alternative_specific_constant_for_return_stops_0out_1in
 Alternative specific constant for return  stops on joint tours,-1.329,coef_alternative_specific_constant_for_return_stops_on_joint_tours_0out_1in
 Alternative specific constant for return  stops,-1.48,coef_alternative_specific_constant_for_return_stops_0out_2in
