@@ -10,6 +10,15 @@ Description,Output,Expression
 # Then save to CSV
 ,total_vmt,_total_vmt.rename('vmt')
 
+# Land Use Descriptive statiscs
+,land_use_density,"land_use[['household_density','employment_density','density_index']].describe().T.round(2).reset_index()"
+#,accessibility_stats,"accessibility.describe().T.round(2).reset_index()"
+
+# Count autos by income category
+,hh_income_by_autoownership,"households.groupby(['income_category', 'auto_ownership']).size().unstack(-1).reset_index()"
+,hh_by_vot,households.groupby('vot_category').size().rename('households').reset_index()
+
+
 # Calculate vmt per capita
 # (All outputs to CSV have to be a Pandas Series or DataFrame)
 ,vmt_per_capita,"pd.Series(_total_vmt / len(persons_merged), name='vmt_per_capita')"
@@ -27,6 +36,10 @@ Description,Output,Expression
 
 # Count persons
 ,persons_count,persons_merged[['household_id']].count().rename('persons')
+,persons_by_ptype_count,persons_merged.groupby('person_type').size().rename('persons').reset_index()
+
+# Count persons dap
+,person_dap_by_ptype,"persons_merged.groupby(['person_type', 'cdap_activity']).size().unstack(-1).reset_index()"
 
 # Count person-tours
 ,person_tours,"trips_merged[['tour_id', 'number_of_participants']].drop_duplicates()[['number_of_participants']].sum().rename('tours')"
@@ -39,6 +52,13 @@ Description,Output,Expression
 
 # Count trips
 ,trips_count,trips_merged.reset_index()[['trip_id']].count().rename('trips')
+
+# work related
+,work_distance_to_work,"persons_merged[persons_merged['is_worker'] == True].groupby('work_distance_bins')[['is_worker']].count().reset_index()"
+,free_parking_at_work,"persons_merged[persons_merged['is_worker'] == True].groupby(['income_category', 'free_parking_at_work']).size().unstack(-1).reset_index()"
+
+# school distance to school
+,school_distance_to_school,"persons_merged[persons_merged['is_student'] == True].groupby('school_distance_bins')[['is_student']].count().reset_index()"
 
 # Count tours per household
 ,_tours,"trips_merged[['tour_id', 'number_of_participants']].drop_duplicates()['number_of_participants'].sum()"
