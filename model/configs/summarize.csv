@@ -83,7 +83,7 @@ Description,Output,Expression
 
 # Calculate share of taz population that is low income by decile
 # (Output deciles by specifying '{rank}' as the label format in the quantile function)
-,_low_income_pop_by_taz,persons_merged[persons_merged.income < 50000].groupby('home_zone_id').size()
+,_low_income_pop_by_taz,persons_merged[persons_merged.income < 70000].groupby('home_zone_id').size()
 ,_total_pop_by_taz,persons_merged.groupby('home_zone_id').size()
 ,_proportion_low_income_by_taz,"_low_income_pop_by_taz / _total_pop_by_taz"
 ,_proportion_low_income_deciles,"quantiles(_proportion_low_income_by_taz, 10, '{rank}')"
