@@ -85,6 +85,9 @@ Description,Output,Expression
 # Count trips with each combination of tour mode and trip mode (for Sankey)
 ,tour_mode_to_trip_mode,"trips_merged.groupby(['tour_mode','trip_mode']).size().rename('trips').reset_index()"
 
+# Count trips by purpose (tour_type) and trip mode
+,trips_by_tour_type_by_trip_mode_count,"trips_merged.groupby(['trip_mode','tour_type']).size().rename('trips').reset_index()"
+
 # Count work tours by time of day
 ,_work_tours,trips_merged[trips_merged['tour_type'] == 'work']
 ,work_tours_tod_count,_work_tours.groupby('tour_id').depart.min().reset_index().groupby('depart').size().sort_index().rename('tours').reset_index()
