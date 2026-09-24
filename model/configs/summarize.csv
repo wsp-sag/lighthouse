@@ -49,6 +49,7 @@ Description,Output,Expression
 
 # Count tours
 ,tours_count,tours_merged.reset_index()[['tour_id']].count().rename('tours')
+,tours_by_mode_count,tours_merged.groupby('tour_mode')[['number_of_participants']].sum().T
 
 # Count trips
 ,trips_count,trips_merged.reset_index()[['trip_id']].count().rename('trips')
@@ -85,8 +86,11 @@ Description,Output,Expression
 # Count trips with each combination of tour mode and trip mode (for Sankey)
 ,tour_mode_to_trip_mode,"trips_merged.groupby(['tour_mode','trip_mode']).size().rename('trips').reset_index()"
 
-# Count trips by purpose (tour_type) and trip mode
-,trips_by_tour_type_by_trip_mode_count,"trips_merged.groupby(['trip_mode','tour_type']).size().rename('trips').reset_index()"
+# Count trips/tours by purpose (tour_type) and trip/tour mode
+,trips_by_tour_type_by_trip_mode_count,"trips_merged.groupby(['tour_type','trip_mode']).size().rename('trips').reset_index()"
+,tours_by_tour_type_by_tour_mode_count,"tours_merged.groupby(['tour_type','tour_mode']).size().rename('tours').reset_index()"
+,tours_by_tour_type_by_tour_mode_by_stops_count,"tours_merged.groupby(['tour_type','tour_mode','stop_frequency']).size().rename('tours').reset_index()"
+,tours_by_tour_type_by_tod_count,"tours_merged.groupby(['tour_type','start']).size().rename('tours').reset_index()"
 
 # Count work tours by time of day
 ,_work_tours,trips_merged[trips_merged['tour_type'] == 'work']
