@@ -55,9 +55,9 @@ dest terminal time not counted at home,_dest_terminal_time,"np.where(inbound & l
 ,sov_available,odt_skims['da_time']>0
 ,hov2_available,odt_skims['sr_time']>0
 ,hov3_available,odt_skims['sr_time']>0
-,walk_transit_available,walk_transit_available & (odt_skims['tw_ivtt']/TRANSIT_SCALE_FACTOR>0)
-,drive_transit_available_outbound,drive_transit_available & df.outbound & (odt_skims['ta_ivtt']/TRANSIT_SCALE_FACTOR>0)
-,drive_transit_available_inbound,drive_transit_available & ~df.outbound & (odt_skims['ta_ivtt']/TRANSIT_SCALE_FACTOR>0)
+,walk_transit_available,walk_transit_available & (odt_skims['tw_ivtt']>0)
+,drive_transit_available_outbound,drive_transit_available & df.outbound & (odt_skims['ta_ivtt']>0)
+,drive_transit_available_inbound,drive_transit_available & ~df.outbound & (odt_skims['ta_ivtt']>0)
 #,od_dist_walk,od_skims['dist_nm']
 #,do_dist_walk,od_skims.reverse('dist_nm')
 #,max_dist_walk,od_skims.max('dist_nm')
