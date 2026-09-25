@@ -30,6 +30,16 @@ households:
         - Medium VOT ($5-$10)
         - High VOT ($10-$20)
         - Very High VOT (>$20)
+    - column: auto_ownership
+      label: auto_ownership_category
+      type: manual_breaks
+      bin_breaks: [-99,0,1,2,3,99]
+      bin_labels:
+        - 0 car
+        - 1 car
+        - 2 cars
+        - 3 cars
+        - 4+ cars
 persons_merged:
   BIN:
     # Manually-specified bins

@@ -134,3 +134,18 @@ Description,Output,Expression
 
 # Counts of trips by income and travel time category
 #,trips_by_income_and_travel_time_category,"trips_merged.groupby(['trip_income_category','total_time_category']).size().rename('trips').unstack(-2).reset_index()"
+
+# Work from home
+,_work_from_home,"persons_merged[persons_merged['ptype'].isin([1,2])]"
+,work_from_home,"_work_from_home.groupby('work_from_home').size().rename('persons').reset_index()"
+
+# Telecommuting
+,_telecommuting,"persons_merged[persons_merged['ptype'].isin([1,2])]"
+,_telecommuting_without_wfh,"_telecommuting[_telecommuting['work_from_home']==False]"
+,telecommute_frequency,"_telecommuting_without_wfh.groupby('telecommute_frequency').size().rename('persons').reset_index()"
+
+# Auto ownership
+,auto_ownership,households.groupby('auto_ownership_category').size().rename('households').reset_index()
+
+# Tour Frequency
+,tours_by_tour_purpose,tours_merged.groupby('primary_purpose').size().rename('tours').reset_index()
