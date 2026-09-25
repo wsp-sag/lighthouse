@@ -14,13 +14,12 @@ households:
     - column: income
       label: income_category
       type: manual_breaks
-      bin_breaks: [0, 25000, 50000, 75000, 100000, 999999]
+      bin_breaks: [0, 35000, 70000, 140000, 999999]
       bin_labels:
-        - Very Low Income ($0-$25k)
-        - Low Income ($25k-$50k)
-        - Medium Income ($50k-$75k)
-        - High Income ($75k-$100k)
-        - Very High Income (>$100k)
+        - Low Income ($0-$35k)
+        - Medium Income ($35k-$70k)
+        - High Income ($70k-$140k)
+        - Very High Income (>$140k)
     - column: hh_value_of_time
       label: vot_category
       type: manual_breaks
@@ -31,23 +30,32 @@ households:
         - Medium VOT ($5-$10)
         - High VOT ($10-$20)
         - Very High VOT (>$20)
+    - column: auto_ownership
+      label: auto_ownership_category
+      type: manual_breaks
+      bin_breaks: [-99,0,1,2,3,99]
+      bin_labels:
+        - 0 car
+        - 1 car
+        - 2 cars
+        - 3 cars
+        - 4+ cars
 persons_merged:
   BIN:
     # Manually-specified bins
     - column: income
       label: income_category
       type: manual_breaks
-      bin_breaks: [0, 25000, 50000, 75000, 100000, 999999]
+      bin_breaks: [0, 35000, 70000, 140000, 999999]
       bin_labels:
-        - Very Low Income ($0-$25k)
-        - Low Income ($25k-$50k)
-        - Medium Income ($50k-$75k)
-        - High Income ($75k-$100k)
-        - Very High Income (>$100k)
+        - Low Income ($0-$35k)
+        - Medium Income ($35k-$70k)
+        - High Income ($70k-$140k)
+        - Very High Income (>$140k)
 
     # Breaks column into quantiles
     - column: income
-      label: income_quintile
+      label: income_quintiles
       type: quantiles
       bins: 5
       label_format: ${left:,.2f} - ${right:,.2f}  # 'left' and 'right' are bin boundaries
@@ -99,13 +107,12 @@ trips_merged:
     - column: income
       label: trip_income_category  # TODO: Figure out why this can't have the same name as a slicer for persons_merged
       type: manual_breaks
-      bin_breaks: [0, 25000, 50000, 75000, 100000, 999999]
+      bin_breaks: [0, 35000, 70000, 140000, 999999]
       bin_labels:
-        - Very Low Income ($0-$25k)
-        - Low Income ($25k-$50k)
-        - Medium Income ($50k-$75k)
-        - High Income ($75k-$100k)
-        - Very High Income (>$100k)
+        - Low Income ($0-$35k)
+        - Medium Income ($35k-$70k)
+        - High Income ($70k-$140k)
+        - Very High Income (>$140k)
     - column: total_time
       label: total_time_category
       type: spaced_intervals
@@ -123,7 +130,7 @@ trips_merged:
         DRIVE_TRANSIT: Transit
         WALK: Non-Motorized
         BIKE: Non-Motorized
-        RIDEHAIL: Ride Hail
+        RIDESOURCE: Ridesource
     - column: trip_mode
       label: major_access_trip_mode
       map:
@@ -134,7 +141,7 @@ trips_merged:
         DRIVE_TRANSIT: Transit
         WALK: Non-Motorized
         BIKE: Non-Motorized
-        RIDEHAIL: Ride Hail
+        RIDESOURCE: Ridesource
 # preprocessor:
 #   DF: trips_mergerd
 #   SPEC: summarize_preprocessor.csv
@@ -147,17 +154,15 @@ trips_merged:
 #       type: manual_breaks
 #       bin_breaks:
 #         - 0
-#         - 25000
-#         - 50000
-#         - 75000
-#         - 100000
+#         - 35000
+#         - 70000
+#         - 140000
 #         - 999999
 #       bin_labels:
-#         - Very Low Income ($0-$25k)
-#         - Low Income ($25k-$50k)
-#         - Medium Income ($50k-$75k)
-#         - High Income ($75k-$100k)
-#         - Very High Income (>$100k)
+#         - Low Income ($0-$35k)
+#         - Medium Income ($35k-$70k)
+#         - High Income ($70k-$140k)
+#         - Very High Income (>$140k)
 
 #  # Breaks column into quantiles
 #     - column: income
@@ -188,17 +193,15 @@ trips_merged:
 #       type: manual_breaks
 #       bin_breaks:
 #         - 0
-#         - 25000
-#         - 50000
-#         - 75000
-#         - 100000
+#         - 35000
+#         - 70000
+#         - 140000
 #         - 999999
 #       bin_labels:
-#         - Very Low Income ($0-$25k)
-#         - Low Income ($25k-$50k)
-#         - Medium Income ($50k-$75k)
-#         - High Income ($75k-$100k)
-#         - Very High Income (>$100k)
+#         - Low Income ($0-$35k)
+#         - Medium Income ($35k-$70k)
+#         - High Income ($70k-$140k)
+#         - Very High Income (>$140k)
 
 #     - column: total_time
 #       label: total_time_category
@@ -211,12 +214,9 @@ trips_merged:
 #     - column: trip_mode
 #       label: major_trip_mode
 #       map:
-#         DRIVEALONEFREE: SOV
-#         DRIVEALONEPAY: SOV
-#         SHARED2FREE: HOV
-#         SHARED2PAY: HOV
-#         SHARED3FREE: HOV
-#         SHARED3PAY: HOV
+#         DRIVEALONE: SOV
+#         SHARED2: HOV
+#         SHARED3: HOV
 #         WALK_LOC: Transit
 #         WALK_LRF: Transit
 #         WALK_EXP: Transit
@@ -230,18 +230,15 @@ trips_merged:
 #         DRIVEACCESS: Transit
 #         WALK: Non-Motorized
 #         BIKE: Non-Motorized
-#         TAXI: Ride Hail
-#         TNC_SINGLE: Ride Hail
-#         TNC_SHARED: Ride Hail
+#         TAXI: Ridesource
+#         TNC_SINGLE: Ridesource
+#         TNC_SHARED: Ridesource
 #     - column: trip_mode
 #       label: major_access_trip_mode
 #       map:
-#         DRIVEALONEFREE: SOV
-#         DRIVEALONEPAY: SOV
-#         SHARED2FREE: HOV
-#         SHARED2PAY: HOV
-#         SHARED3FREE: HOV
-#         SHARED3PAY: HOV
+#         DRIVEALONE: SOV
+#         SHARED2: HOV
+#         SHARED3: HOV
 #         WALK_LOC: Walk to Transit
 #         WALK_LRF: Walk to Transit
 #         WALK_EXP: Walk to Transit
@@ -254,6 +251,6 @@ trips_merged:
 #         DRIVE_COM: Drive to Transit
 #         WALK: Non-Motorized
 #         BIKE: Non-Motorized
-#         TAXI: Ride Hail
-#         TNC_SINGLE: Ride Hail
-#         TNC_SHARED: Ride Hail
+#         TAXI: Ridesource
+#         TNC_SINGLE: Ridesource
+#         TNC_SHARED: Ridesource

@@ -2,8 +2,9 @@ Description,Target,Expression
 #,,annotate households table after import
 ,_PERSON_COUNT,"lambda query, persons, households: persons.query(query).groupby('household_id').size().reindex(households.index).fillna(0).astype(np.int8)"
 #,,FIXME households.income can be negative  - so we clip?
+#,,NOTE bins are "[0,35), [35, 70), [70, 140), [140, Inf)" to match Census approach so we use right=False
 income_in_thousands,income_in_thousands,(households.income / 1000).clip(lower=0)
-income_segment,income_segment,"pd.cut(income_in_thousands, bins=[-np.inf, 30, 60, 100, np.inf], labels=[INCOME_SEGMENT_LOW, INCOME_SEGMENT_MED, INCOME_SEGMENT_HIGH, INCOME_SEGMENT_VERYHIGH]).astype(int)"
+income_segment,income_segment,"pd.cut(income_in_thousands, bins=[-np.inf, 35, 70, 140, np.inf], right=False, labels=[INCOME_SEGMENT_LOW, INCOME_SEGMENT_MED, INCOME_SEGMENT_HIGH, INCOME_SEGMENT_VERYHIGH]).astype(int)"
 #,,
 ,_MIN_VOT,setting('min_value_of_time')
 ,_MAX_VOT,setting('max_value_of_time')

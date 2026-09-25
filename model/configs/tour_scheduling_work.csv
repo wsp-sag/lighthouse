@@ -12,8 +12,8 @@ util_first_of_2plus_work_tours_departure_shift_effects,First of 2+ work tours de
 util_first_of_2plus_work_tours_duration_shift_effects,First of 2+ work tours duration shift effects,((tour_count>1) & (tour_num == 1)) * duration,coef_first_of_2plus_work_tours_duration_shift_effects
 util_subsequent_2plus_work_departure_tours_shift_effects,Subsequent 2+ work departure tours shift effects,(tour_num == 2) * start,coef_subsequent_2plus_work_departure_tours_shift_effects
 util_subsequent_2plus_work_duration_tours_shift_effects,Subsequent 2+ work duration tours shift effects,(tour_num == 2) * duration,coef_subsequent_2plus_work_duration_tours_shift_effects
-util_household_income_early_departure_interaction,Household income -- Early departure interaction,(income_in_thousands > 100) & (start < 6),coef_household_income_early_departure_interaction
-util_household_income_late_arrival_interaction,Household income -- Late arrival interaction,(income_in_thousands > 100) & (end > 22),coef_household_income_late_arrival_interaction
+util_household_income_early_departure_interaction,Household income -- Early departure interaction,(income_in_thousands >= 140) & (start < 6),coef_household_income_early_departure_interaction
+util_household_income_late_arrival_interaction,Household income -- Late arrival interaction,(income_in_thousands >= 140) & (end > 22),coef_household_income_late_arrival_interaction
 util_destination_in_cbd_early_departure_interaction,Destination in CBD -- Early departure interaction,workplace_in_cbd & (start < 6),coef_destination_in_cbd_early_departure_interaction
 util_destination_in_cbd_late_arrival_interaction,Destination in CBD -- Late arrival interaction,workplace_in_cbd & (end > 22),coef_destination_in_cbd_late_arrival_interaction
 util_rural_household_early_departure_interaction,Rural household -- Early departure interaction,home_is_rural & (start < 6),coef_rural_household_early_departure_interaction

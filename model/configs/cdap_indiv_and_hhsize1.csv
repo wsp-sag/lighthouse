@@ -27,18 +27,18 @@ Retired interaction with fewer cars than workers,(ptype == 5) & (auto_ownership 
 Driving-age child who is in school interaction with fewer cars than workers,(ptype == 6) & (auto_ownership < num_workers),,,coef_driving_age_child_who_is_in_school_interaction_with_fewer_cars_than_workers_H
 Pre-driving-age child who is in school interaction with fewer cars than workers,(ptype == 7) & (auto_ownership < num_workers),,,coef_pre_driving_age_child_who_is_in_school_interaction_with_fewer_cars_than_workers_H
 Pre-driving-age child who is too young for school interaction with fewer cars than workers,(ptype == 8) & (auto_ownership < num_workers),,,coef_pre_driving_age_child_who_is_too_young_for_school_interaction_with_fewer_cars_than_workers_H
-Full-time worker interaction with income less than $20k,(ptype == 1) & (income_in_thousands < 20),,,coef_full_time_worker_interaction_with_income_less_than_20k_H
-Retired interaction with income less than $20k,(ptype == 5) & (income_in_thousands < 20),,,coef_retired_interaction_with_income_less_than_20k_H
-Part-time worker interaction with income less than $20k,(ptype == 2) & (income_in_thousands < 20),,,coef_part_time_worker_interaction_with_income_less_than_20k_H
-Part-time worker interaction with income between $50k and $100k,(ptype == 2) & (income_in_thousands >= 50) & (income_in_thousands <= 100),,,coef_part_time_worker_interaction_with_income_between_50k_and_100k_H
-Part-time worker interaction with income more than $100k,(ptype == 2) & (income_in_thousands >= 100),,coef_part_time_worker_interaction_with_income_more_than_100k_N,coef_part_time_worker_interaction_with_income_more_than_100k_H
-Non-working adult interaction with income between $50k and $100k,(ptype == 4) & (income_in_thousands >= 50) & (income_in_thousands <= 100),,,coef_non_working_adult_interaction_with_income_between_50k_and_100k_H
-Non-working adult interaction with income more than $100k,(ptype == 4) & (income_in_thousands >= 100),,,coef_non_working_adult_interaction_with_income_more_than_100k_H
-Driving-age child who is in school interaction with less than $20k,(ptype == 6) & (income_in_thousands < 20),,,coef_driving_age_child_who_is_in_school_interaction_with_less_than_20k_H
-Driving-age child who is in school interaction income between $50k and $100k,(ptype == 6) & (income_in_thousands >= 50) & (income_in_thousands <= 100),,,coef_driving_age_child_who_is_in_school_interaction_income_between_50k_and_100k_H
-Driving-age child who is in school interaction with income more than $100k,(ptype == 6) & (income_in_thousands >= 100),,,coef_driving_age_child_who_is_in_school_interaction_with_income_more_than_100k_H
-Pre-driving-age child who is too young for school interaction with income between $50k and $100k,(ptype == 8) & (income_in_thousands >= 50) & (income_in_thousands <= 100),,,coef_pre_driving_age_child_who_is_too_young_for_school_interaction_with_income_between_50k_and_100k_H
-Pre-driving-age child who is too young for school interaction with income more than $100k,(ptype == 8) & (income_in_thousands >= 100),,,coef_pre_driving_age_child_who_is_too_young_for_school_interaction_with_income_more_than_100k_H
+Full-time worker interaction with low income,(ptype == 1) & (income_in_thousands < 35),,,coef_full_time_worker_interaction_with_low_income_H
+Retired interaction with low income,(ptype == 5) & (income_in_thousands < 35),,,coef_retired_interaction_with_low_income_H
+Part-time worker interaction with low income,(ptype == 2) & (income_in_thousands < 35),,,coef_part_time_worker_interaction_with_low_income_H
+Part-time worker interaction with high income,(ptype == 2) & (income_in_thousands >= 70) & (income_in_thousands < 140),,,coef_part_time_worker_interaction_with_high_income_H
+Part-time worker interaction with very high income,(ptype == 2) & (income_in_thousands >= 140),,coef_part_time_worker_interaction_with_very_high_income_N,coef_part_time_worker_interaction_with_very_high_income_H
+Non-working adult interaction with high income,(ptype == 4) & (income_in_thousands >= 70) & (income_in_thousands < 140),,,coef_non_working_adult_interaction_with_high_income_H
+Non-working adult interaction with very high income,(ptype == 4) & (income_in_thousands >= 140),,,coef_non_working_adult_interaction_with_very_high_income_H
+Driving-age child who is in school interaction with low income,(ptype == 6) & (income_in_thousands < 35),,,coef_driving_age_child_who_is_in_school_interaction_with_low_income_H
+Driving-age child who is in school interaction with high income,(ptype == 6) & (income_in_thousands >= 70) & (income_in_thousands < 140),,,coef_driving_age_child_who_is_in_school_interaction_with_high_income_H
+Driving-age child who is in school interaction with very high income,(ptype == 6) & (income_in_thousands >= 140),,,coef_driving_age_child_who_is_in_school_interaction_with_very_high_income_H
+Pre-driving-age child who is too young for school interaction with high income,(ptype == 8) & (income_in_thousands >= 70) & (income_in_thousands < 140),,,coef_pre_driving_age_child_who_is_too_young_for_school_interaction_with_high_income_H
+Pre-driving-age child who is too young for school interaction with very high income,(ptype == 8) & (income_in_thousands >= 140),,,coef_pre_driving_age_child_who_is_too_young_for_school_interaction_with_very_high_income_H
 Full-time worker intraction with peak accessibility to all employment,(ptype == 1) * auPkTotal,coef_full_time_worker_intraction_with_peak_accessibility_to_all_employment_M,,
 Part-time worker interaction with peak accessibility to all employment,(ptype == 2) * auPkTotal,coef_part_time_worker_interaction_with_peak_accessibility_to_all_employment_M,,
 Non-working adult interaction with peak accessibility to all employment,(ptype == 4) * auPkTotal,coef_non_working_adult_interaction_with_peak_accessibility_to_all_employment_M,,
