@@ -13,8 +13,8 @@ Description,Target,Expression
 ,_hov2_dist,trip_odt_skims['dist']
 ,_hov3_dist,trip_odt_skims['dist']
 ,_ridesource_dist,trip_odt_skims['dist']
-# Transit auto access/eggress distance (miles x 100)
-,_drv_transit_wlk_ddist,trip_odt_skims['ta_ddist']/100
+# Transit auto access/eggress distance
+,_drv_transit_wlk_ddist,trip_odt_skims['ta_ddist']
 # Bike distance
 ,_bike_dist,trip_od_skims['dist_nm']
 # Walk distance
@@ -29,32 +29,32 @@ Description,Target,Expression
 ,_hov3_time,trip_odt_skims['sr_time']
 ,_ridesource_time,trip_odt_skims['sr_time']
 # Transit vehicle time (minutes x 100)
-,_drv_transit_wlk_totivt,trip_odt_skims['ta_ivtt']/100
-,_wlk_transit_wlk_totivt,trip_odt_skims['tw_ivtt']/100
+,_drv_transit_wlk_totivt,trip_odt_skims['ta_ivtt']
+,_wlk_transit_wlk_totivt,trip_odt_skims['tw_ivtt']
 # Initial wait time (IWAIT)
-,_drv_transit_wlk_iwait,trip_odt_skims['ta_iwait']/100
-,_wlk_transit_wlk_iwait,trip_odt_skims['tw_iwait']/100
+,_drv_transit_wlk_iwait,trip_odt_skims['ta_iwait']
+,_wlk_transit_wlk_iwait,trip_odt_skims['tw_iwait']
 # Transfer wait time (XWAIT)
-,_drv_transit_wlk_xwait,trip_odt_skims['ta_xwait']/100
-,_wlk_transit_wlk_xwait,trip_odt_skims['tw_xwait']/100
+,_drv_transit_wlk_xwait,trip_odt_skims['ta_xwait']
+,_wlk_transit_wlk_xwait,trip_odt_skims['tw_xwait']
 # Walk access time (WACC) (for all transit modes)
 ,_wlk_wacc,_SHORT_WALK / _WALK_SPEED * 60 # Constant assumption of short walk access
 # Auxiliary walk time (WAUX)
-,_drv_transit_wlk_time,trip_odt_skims['ta_walk']/100
-,_wlk_transit_wlk_time,trip_odt_skims['tw_walk']/100
+,_drv_transit_wlk_time,trip_odt_skims['ta_walk']
+,_wlk_transit_wlk_time,trip_odt_skims['tw_walk']
 # Walk egress time (WEGR) (for all transit modes)
 ,_wlk_wegr,_SHORT_WALK / _WALK_SPEED * 60 # Constant assumption of short walk egress
 # Drive access/egress time (DTIM)
-,_drv_transit_wlk_dtim,trip_odt_skims['ta_dtime']/100
+,_drv_transit_wlk_dtim,trip_odt_skims['ta_dtime']
 ## Costs
 # Private auto tolls
 ,_sov_toll,trip_odt_skims['da_toll']
 ,_hov2_toll,trip_odt_skims['sr_toll']
 ,_hov3_toll,trip_odt_skims['sr_toll']
 ,_ridesource_toll,trip_odt_skims['sr_toll']
-# Transit fares
-,_drv_transit_wlk_far,trip_odt_skims['ta_fare']
-,_wlk_transit_wlk_far,trip_odt_skims['tw_fare']
+# Transit fares in cents
+,_drv_transit_wlk_far,trip_odt_skims['ta_fare']*100
+,_wlk_transit_wlk_far,trip_odt_skims['tw_fare']*100
 ## Mode Indicators
 # Private Auto
 ,_sov_mode,trips_merged['trip_mode'] == 'DRIVEALONE'

@@ -149,3 +149,6 @@ Description,Output,Expression
 
 # Tour Frequency
 ,tours_by_tour_purpose,tours_merged.groupby('primary_purpose').size().rename('tours').reset_index()
+
+# Trip length by tour purpose
+,avg_trip_length_by_tour_purpose,"trips_merged.groupby('tour_type')['distance_trip'].agg(['count','mean']).rename(columns={'count':'trips','mean':'avg_trip_length'}).reset_index()"
