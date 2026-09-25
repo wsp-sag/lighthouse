@@ -98,7 +98,7 @@ Description,Target,Expression
 ,bike_distance,_bike_mode * _bike_dist
 ## Cost
 ,_transit_fare_cost,(_drive_transit_mode * _drv_transit_wlk_far) + (_walk_transit_mode * _wlk_transit_wlk_far)
-,_ridesource_cost,_RIDESOURCE_BASE_FARE + (_ridesource_distance * _RIDESOURCE_COST_PER_MILE) + (_ridesource_time * _RIDESOURCE_COST_PER_MINUTE)
+,_ridesource_cost,_ridesource_mode * (_RIDESOURCE_BASE_FARE + (_ridesource_distance * _RIDESOURCE_COST_PER_MILE) + (_ridesource_time * _RIDESOURCE_COST_PER_MINUTE))
 ,fare_cost,_transit_fare_cost + _ridesource_cost
 ,toll_cost,(_sov_mode * _sov_toll) + (_hov2_mode * _hov2_toll) + (_hov3_mode * _hov3_toll) + (_ridesource_mode * _ridesource_toll)
 ,total_cost,fare_cost + toll_cost
