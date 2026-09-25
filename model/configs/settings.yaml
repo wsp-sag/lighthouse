@@ -233,7 +233,7 @@ output_tables:
         destination: land_use.zone_id
 # area_types less than this are considered urban
 urban_threshold: 4
-cbd_threshold: 1
+cbd_threshold: 2
 rural_threshold: 6
 
 # - value of time
