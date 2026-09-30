@@ -62,6 +62,62 @@ def test_valid_outputs(population, outputs):
     ci.validate_outputs(population, outputs, [1, 2])
 
 
+@pytest.fixture
+def multistop_outputs(outputs):
+    # Two outbound trips and three inbound trips; numbering restarts on return.
+    trips = outputs["trips"].iloc[[0, 0, 1, 1, 1]].copy()
+    trips.index = [40, 41, 42, 43, 44]
+    trips["origin"] = [1, 3, 2, 4, 3]
+    trips["destination"] = [3, 2, 4, 3, 1]
+    trips["trip_num"] = [1, 2, 1, 2, 3]
+    trips["trip_count"] = [2, 2, 3, 3, 3]
+    trips["depart"] = [8, 9, 17, 18, 19]
+    outputs["trips"] = trips
+    return outputs
+
+
+def test_valid_multistop_round_trip(population, multistop_outputs):
+    # Neither table order nor trip IDs define travel order.
+    multistop_outputs["trips"] = multistop_outputs["trips"].iloc[[3, 1, 4, 0, 2]]
+    ci.validate_outputs(population, multistop_outputs, [1, 2, 3, 4])
+
+
+def test_allows_independently_scheduled_directions(population, multistop_outputs):
+    # ActivitySim 1.5.1 can produce overlapping leg schedules. Preserve the
+    # per-leg time contract rather than turning this existing behavior blocking.
+    multistop_outputs["trips"].loc[[42, 43, 44], "depart"] = [8, 9, 10]
+    ci.validate_outputs(population, multistop_outputs, [1, 2, 3, 4])
+
+
+@pytest.mark.parametrize(
+    "row,column,value,message",
+    [
+        (42, "trip_num", 3, "broken sequence"),
+        (44, "trip_num", 2, "broken sequence"),
+        (42, "trip_count", 5, "incorrect trip_count"),
+        (40, "origin", 3, "incorrect tour endpoints"),
+        (41, "destination", 3, "incorrect tour endpoints"),
+        (42, "origin", 3, "incorrect tour endpoints"),
+        (44, "destination", 3, "incorrect tour endpoints"),
+        (43, "origin", 1, "disconnected path"),
+        (43, "depart", 16, "departure order"),
+    ],
+)
+def test_rejects_corrupt_round_trip(
+    population, multistop_outputs, row, column, value, message
+):
+    multistop_outputs["trips"].loc[row, column] = value
+    with pytest.raises(ValueError, match=message):
+        ci.validate_outputs(population, multistop_outputs, [1, 2, 3, 4])
+
+
+@pytest.mark.parametrize("outbound", [True, False])
+def test_rejects_missing_direction(population, outputs, outbound):
+    outputs["trips"] = outputs["trips"].loc[outputs["trips"].outbound == outbound]
+    with pytest.raises(ValueError, match="missing tour direction"):
+        ci.validate_outputs(population, outputs, [1, 2])
+
+
 @pytest.mark.parametrize(
     "table,column,value,message",
     [
